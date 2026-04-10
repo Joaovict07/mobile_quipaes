@@ -121,7 +121,8 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                         backgroundColor: colorsTheme.AppColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
-                      onPressed: () {},
+                      onPressed: () =>
+                        Navigator.pushNamed(context, AppRoutes.menu),
                       child: const Text(
                         'Entrar',
                         style: TextStyle(color: Colors.white, fontSize: 16.0),
