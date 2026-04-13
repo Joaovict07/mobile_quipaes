@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
-import 'package:quipaesapp/graficos/graficoSemanal.dart' as graficoSemanal;
+import 'package:quipaesapp/graficos/graficoDinamico.dart' as graficoDinamico;
+import 'package:quipaesapp/graficos/historicoVendas.dart' as historicoVendas;
 
-class MenuWidget extends StatefulWidget {
-  const MenuWidget({super.key});
+
+class VendasWidget extends StatefulWidget {
+  const VendasWidget({super.key});
 
   @override
-  State<MenuWidget> createState() => _MenuWidgetState();
+  State<VendasWidget> createState() => _VendasWidgetState();
 }
 
-class _MenuWidgetState extends State<MenuWidget> {
+class _VendasWidgetState extends State<VendasWidget> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -23,7 +26,7 @@ class _MenuWidgetState extends State<MenuWidget> {
         centerTitle: true,
         elevation: 0,
         title: const Text(
-          'Painel',
+          'Vendas',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: colorsTheme.AppColors.primary,
@@ -38,34 +41,6 @@ class _MenuWidgetState extends State<MenuWidget> {
             child: Column(
               children: [
                 SizedBox(height: screenHeight * 0.12),
-
-                // Botões de Navegação
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildMenuCard(
-                      onTap: (){
-                        Navigator.pushNamed(context, AppRoutes.vendas);
-                      },
-                      title: 'Vendas',
-                      icon: Icons.point_of_sale, 
-                      screenWidth: screenWidth,
-                    ),
-                    SizedBox(
-                      width: screenWidth * 0.05,
-                    ), 
-                    _buildMenuCard(
-                      onTap: (){
-                        Navigator.pushNamed(context, AppRoutes.vendas);
-                      },
-                      title: 'Estoque',
-                      icon: Icons.inventory_2,
-                      screenWidth: screenWidth,
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: screenHeight * 0.05),
 
                 // BigNumbers
                 Container(
@@ -89,7 +64,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: const [
                                 Text(
-                                  'Vendas Mês Atual:',
+                                  'Vendas:',
                                   style: TextStyle(
                                     color: Colors.black54,
                                     fontSize: 16.0,
@@ -124,7 +99,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: const [
                                 Text(
-                                  'Alertas de estoque:',
+                                  'Quantidade de vendas:',
                                   style: TextStyle(
                                     color: Colors.black54,
                                     fontSize: 16.0,
@@ -158,24 +133,48 @@ class _MenuWidgetState extends State<MenuWidget> {
                   ),
                   child: SizedBox(
                     width: screenWidth * 1.5,
-                    height: screenHeight * 0.40,
+                    height: screenHeight * 0.45,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: EdgeInsetsGeometry.only(
+                            top: 1
+                          ),
+
+                          child: Text('Gráfico de Vendas', style: TextStyle(color: Colors.black54, fontSize: 16.0)),
+                        ),
+                        
+                        Padding(
+                          padding: EdgeInsetsGeometry.symmetric(
+                            horizontal: screenWidth * 0.05,
+                          ),
+                          child: graficoDinamico.GraficoGestaoDinamico(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                SizedBox(height: screenHeight * 0.05),
+
+                //Historico de Vendas
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: SizedBox(
+                    width: screenWidth * 1.5,
+                    height: screenHeight * 0.39,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Padding(
                           padding: EdgeInsetsGeometry.symmetric(
-                            vertical: 10
-                          ),
-
-                          child: Text('Vendas nos últimos 7 dias', style: TextStyle(color: Colors.black54, fontSize: 16.0)),
-                        ),
-                        
-                        Padding(
-                          padding: EdgeInsetsGeometry.symmetric(
-                            vertical: screenHeight * 0.05,
                             horizontal: screenWidth * 0.05,
                           ),
-                          child: graficoSemanal.VendasBarChartSemana(),
+                          child: historicoVendas.HistoricoVendasWidget(),
                         ),
                       ],
                     ),
@@ -186,12 +185,16 @@ class _MenuWidgetState extends State<MenuWidget> {
           ),
         ),
       ),
+      floatingActionButton: SpeedDial(
+        icon: Icons.add,
+        backgroundColor: colorsTheme.AppColors.primary,
+        foregroundColor: Colors.white,
+      ),
     );
   }
 }
 
 Widget _buildMenuCard({
-  required VoidCallback onTap,
   required String title,
   required IconData icon,
   required double screenWidth,
@@ -210,8 +213,7 @@ Widget _buildMenuCard({
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap:
-          onTap, 
+        onTap: () {},
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
