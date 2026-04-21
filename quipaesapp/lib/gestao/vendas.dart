@@ -4,6 +4,7 @@ import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import 'package:quipaesapp/graficos/graficoDinamico.dart' as graficoDinamico;
 import 'package:quipaesapp/graficos/historicoVendas.dart' as historicoVendas;
+import 'menu_vendas.dart' as menuVendas;
 
 
 class VendasWidget extends StatefulWidget {
@@ -166,7 +167,7 @@ class _VendasWidgetState extends State<VendasWidget> {
                   ),
                   child: SizedBox(
                     width: screenWidth * 1.5,
-                    height: screenHeight * 0.39,
+                    height: screenHeight * 0.55,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -185,11 +186,7 @@ class _VendasWidgetState extends State<VendasWidget> {
           ),
         ),
       ),
-      floatingActionButton: SpeedDial(
-        icon: Icons.add,
-        backgroundColor: colorsTheme.AppColors.primary,
-        foregroundColor: Colors.white,
-      ),
+      floatingActionButton: AddTransactionFab()
     );
   }
 }
@@ -232,4 +229,24 @@ Widget _buildMenuCard({
       ),
     ),
   );
+}
+
+class AddTransactionFab extends StatelessWidget {
+  const AddTransactionFab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () {
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => const menuVendas.AddTransactionSheet(),
+        );
+      },
+      backgroundColor: colorsTheme.AppColors.primary,
+      child: const Icon(Icons.add_rounded, color: Colors.white)
+    );
+  }
 }
