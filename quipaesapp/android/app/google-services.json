@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "762560295100",
+    "project_id": "quipaesapp",
+    "storage_bucket": "quipaesapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762560295100:android:3bc2b57ed168196f26a0b9",
+        "android_client_info": {
+          "package_name": "com.example.quipaesapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOmTyuiO4MzuR6B0YLhKKYJ_vLypmWwq0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

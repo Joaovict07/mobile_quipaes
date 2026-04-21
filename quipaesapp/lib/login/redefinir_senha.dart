@@ -1,5 +1,10 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:quipaesapp/auth_usuario.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
+import 'package:quipaesapp/login/esqueci_a_senha.dart';
 
 class PasswordFormWidget extends StatefulWidget {
   const PasswordFormWidget({super.key});
@@ -10,18 +15,65 @@ class PasswordFormWidget extends StatefulWidget {
 
 class _PasswordFormWidgetState extends State<PasswordFormWidget> {
   // Use nomes claros para os controllers
-  final TextEditingController _codeController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final email = ModalRoute.of(context)?.settings.arguments as String?;
+    if(email != null) {
+      _emailController.text = email;
+    }
+  }
+
+  @override
   void dispose() {
-    _codeController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
+
+  void redefinicaoSenha(String email, String senha) async {
+  if (_passwordController.text != _confirmPasswordController.text) {
+    print('A senha e a confirmação da senha não são iguais!');
+    return;
+  }
+
+  try {
+    final existe = await AuthUsuario().emailJaExiste(email);
+
+    if (existe) {
+      // E-mail já cadastrado → redefine a senha e volta pro login
+      await AuthUsuario().esqueceuSenha(email);
+      print('E-mail de redefinição enviado!');
+      Navigator.pushNamed(context, '/');
+
+    } else {
+      // E-mail não cadastrado → cadastra o usuário
+      await AuthUsuario().cadastrar(email, senha);
+      print('Usuário cadastrado com sucesso!');
+      Navigator.pushNamed(context, '/');
+    }
+
+  } on FirebaseAuthException catch (e) {
+    switch (e.code) {
+      case 'weak-password':
+        print('Senha muito fraca!');
+        break;
+      case 'invalid-email':
+        print('E-mail inválido!');
+        break;
+      default:
+        print('Erro: ${e.message}');
+        break;
+    }
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +119,7 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        "Código recebido no email:",
+                        "Email:",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -75,31 +127,14 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
                       ),
                       const SizedBox(height: 8),
                       TextField(
-                        controller: _codeController,
+                        controller: _emailController,
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          hintText: 'Código',
+                          hintText: 'Email',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                        ),
-                      ),
-
-                      TextButton(
-                        onPressed: () {},
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.refresh, color: Colors.grey, size: 18),
-                            SizedBox(width: 5),
-                            Text(
-                              'Reenviar código',
-                              style: TextStyle(
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ],
                         ),
                       ),
 
@@ -164,12 +199,9 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
                             ),
                           ),
                           onPressed: () {
+                            final email = ModalRoute.of(context)!.settings.arguments as String;
                             print('Senha redefinida com sucesso');
-                            Navigator.pushNamedAndRemoveUntil(
-                              context,
-                              '/',
-                              (route) => false,
-                            );
+                            redefinicaoSenha(email, _passwordController.text);
                           },
                           child: const Text(
                             'Redefinir',

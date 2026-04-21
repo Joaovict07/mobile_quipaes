@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:quipaesapp/auth_usuario.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 
@@ -121,8 +123,27 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                         backgroundColor: colorsTheme.AppColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
-                      onPressed: () =>
-                        Navigator.pushNamed(context, AppRoutes.menu),
+                      onPressed: () async {
+                        try {
+                          await AuthUsuario().login(_userController.text, _passwordController.text);
+                          Navigator.pushNamed(context, AppRoutes.menu);
+                        }on FirebaseAuthException catch(e) {
+                          switch(e.code) {
+                            case 'user-not-found':
+                              print("Usuário não encontrado!");
+                              break;
+                            case 'wrong-password':
+                              print("Senha incorreta!");
+                              break;
+                            case 'invalid-credential':
+                              print("Email ou senha incorretos!");
+                              break;
+                            default:
+                              print("Erro: ${e.message}");
+                              break;
+                          }
+                        }
+                      },
                       child: const Text(
                         'Entrar',
                         style: TextStyle(color: Colors.white, fontSize: 16.0),

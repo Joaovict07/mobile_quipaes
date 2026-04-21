@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import 'package:quipaesapp/routes/app_routes.dart';
+import 'package:quipaesapp/auth_usuario.dart';
 
 class LoginFormWidget2 extends StatefulWidget {
   const LoginFormWidget2({super.key});
@@ -108,8 +109,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget2> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: colorsTheme.AppColors.primary,
                             ),
-                            onPressed: () =>
-                              Navigator.pushNamed(context, AppRoutes.redefinirSenha)
+                            onPressed: () => Navigator.pushNamed(context, AppRoutes.redefinirSenha, arguments: _userController.text)
                             ,
                             child: const Text(
                               'Avançar',

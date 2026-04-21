@@ -4,8 +4,16 @@ import 'package:quipaesapp/login/esqueci_a_senha.dart';
 import 'package:quipaesapp/login/login.dart' as login;
 import 'package:quipaesapp/login/redefinir_senha.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform
+  );
+
   runApp(const MainApp());
 }
 
