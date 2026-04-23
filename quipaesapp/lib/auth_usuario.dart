@@ -19,6 +19,7 @@ class AuthUsuario {
     );
     await cred.user?.sendEmailVerification();
     print('Usuário cadastrado!');
+    print('Email de verificação foi enviado!');
     return cred;
   }
 

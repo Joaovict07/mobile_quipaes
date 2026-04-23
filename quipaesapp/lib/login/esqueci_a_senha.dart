@@ -109,7 +109,9 @@ class _LoginFormWidgetState extends State<LoginFormWidget2> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: colorsTheme.AppColors.primary,
                             ),
-                            onPressed: () => Navigator.pushNamed(context, AppRoutes.redefinirSenha, arguments: _userController.text)
+                            onPressed: (){
+                              Navigator.pushNamed(context, AppRoutes.redefinirSenha, arguments: _userController.text);
+                            } 
                             ,
                             child: const Text(
                               'Avançar',

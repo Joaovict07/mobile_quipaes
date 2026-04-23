@@ -41,6 +41,12 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
   void redefinicaoSenha(String email, String senha) async {
   if (_passwordController.text != _confirmPasswordController.text) {
     print('A senha e a confirmação da senha não são iguais!');
+    ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('A senha e a confirmação de senha não são iguais!'),
+                                  backgroundColor: colorsTheme.AppColors.primary,
+                                ),
+                              );
     return;
   }
 
@@ -52,24 +58,53 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
       await AuthUsuario().esqueceuSenha(email);
       print('E-mail de redefinição enviado!');
       Navigator.pushNamed(context, '/');
+      ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Email de redefinição de senha enviado!'),
+                                  backgroundColor: colorsTheme.AppColors.primary,
+                                ),
+                              );
 
     } else {
       // E-mail não cadastrado → cadastra o usuário
       await AuthUsuario().cadastrar(email, senha);
-      print('Usuário cadastrado com sucesso!');
       Navigator.pushNamed(context, '/');
+      ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Usuário cadastrado com sucesso! Email de verificação enviado!'),
+                                  backgroundColor: colorsTheme.AppColors.primary,
+                                ),
+                              );
     }
 
   } on FirebaseAuthException catch (e) {
     switch (e.code) {
       case 'weak-password':
         print('Senha muito fraca!');
+        ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Senha muito fraca!'),
+                                  backgroundColor: colorsTheme.AppColors.primary,
+                                ),
+                              );
         break;
       case 'invalid-email':
         print('E-mail inválido!');
+        ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Email invalido'),
+                                  backgroundColor: colorsTheme.AppColors.primary,
+                                ),
+                              );
         break;
       default:
         print('Erro: ${e.message}');
+        ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Erro ${e.message}'),
+                                  backgroundColor: colorsTheme.AppColors.primary,
+                                ),
+                              );
         break;
     }
   }
@@ -128,9 +163,10 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: _emailController,
+                        readOnly: true,
                         decoration: InputDecoration(
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: Colors.grey,
                           hintText: 'Email',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -198,9 +234,8 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
                               vertical: 15,
                             ),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             final email = ModalRoute.of(context)!.settings.arguments as String;
-                            print('Senha redefinida com sucesso');
                             redefinicaoSenha(email, _passwordController.text);
                           },
                           child: const Text(
