@@ -130,16 +130,40 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                         }on FirebaseAuthException catch(e) {
                           switch(e.code) {
                             case 'user-not-found':
-                              print("Usuário não encontrado!");
+                              Navigator.of(context).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Usuário não encontrado!'),
+                                  backgroundColor: colorsTheme.AppColors.primary,
+                                ),
+                              );
                               break;
                             case 'wrong-password':
-                              print("Senha incorreta!");
+                              Navigator.of(context).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Senha incorreta!'),
+                                  backgroundColor: colorsTheme.AppColors.primary,
+                                ),
+                              );
                               break;
                             case 'invalid-credential':
-                              print("Email ou senha incorretos!");
+                              Navigator.of(context).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Email ou senha incorretos!'),
+                                  backgroundColor: colorsTheme.AppColors.primary,
+                                ),
+                              );
                               break;
                             default:
-                              print("Erro: ${e.message}");
+                              Navigator.of(context).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Erro: ${e.message}'),
+                                  backgroundColor: colorsTheme.AppColors.primary,
+                                ),
+                              );
                               break;
                           }
                         }
