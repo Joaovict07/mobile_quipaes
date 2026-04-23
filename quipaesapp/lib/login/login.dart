@@ -139,7 +139,6 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                               );
                               break;
                             case 'wrong-password':
-                              Navigator.of(context).pop();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('Senha incorreta!'),
@@ -148,7 +147,6 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                               );
                               break;
                             case 'invalid-credential':
-                              Navigator.of(context).pop();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text('Email ou senha incorretos!'),

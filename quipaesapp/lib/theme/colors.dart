@@ -5,6 +5,7 @@ abstract final class AppColors {
   static const primary      = Color(0xFF1E293B);
   static const primaryDark  = Color(0xFF1565C0);
   static const primaryLight = Color(0xFF42A5F5);
+  static const primaryRed = Color.fromARGB(255, 221, 42, 42);
 
   // ── Backgrounds ────────────────────────────────────────────────────────
   static const background     = Color(0xFFBACFE0);
