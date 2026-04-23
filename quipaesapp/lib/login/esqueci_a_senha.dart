@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import 'package:quipaesapp/routes/app_routes.dart';
-import 'package:quipaesapp/auth_usuario.dart';
+
+String? validateEmail(String? value) {
+  if (value == null || value.trim().isEmpty) {
+    return 'O e-mail é obrigatório';
+  }
+  final emailRegex = RegExp(
+    r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+  );
+  if (!emailRegex.hasMatch(value.trim())) {
+    return 'Informe um e-mail válido';
+  }
+  return null;
+}
 
 class LoginFormWidget2 extends StatefulWidget {
   const LoginFormWidget2({super.key});
@@ -109,8 +121,20 @@ class _LoginFormWidgetState extends State<LoginFormWidget2> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: colorsTheme.AppColors.primary,
                             ),
-                            onPressed: () => Navigator.pushNamed(context, AppRoutes.redefinirSenha, arguments: _userController.text)
-                            ,
+                            onPressed: () {
+                              final erro = validateEmail(_userController.text);
+                              if (erro != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(erro)),
+                                );
+                                return;
+                              }
+                              Navigator.pushNamed(
+                                context,
+                                AppRoutes.redefinirSenha,
+                                arguments: _userController.text,
+                              );
+                            },
                             child: const Text(
                               'Avançar',
                               style: TextStyle(
