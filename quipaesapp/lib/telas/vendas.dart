@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
-import 'package:quipaesapp/graficos/graficoDinamico.dart' as graficoDinamico;
-import 'package:quipaesapp/graficos/historicoVendas.dart' as historicoVendas;
-import 'menu_vendas.dart' as menuVendas;
+import 'package:quipaesapp/widgets/graficos/graficoDinamico.dart' as graficoDinamico;
+import 'package:quipaesapp/widgets/graficos/historicoVendas.dart' as historicoVendas;
+import '../widgets/menu_vendas.dart' as menuVendas;
 
 
 class VendasWidget extends StatefulWidget {

@@ -4,4 +4,5 @@ class AppRoutes {
   static const String redefinirSenha = '/redefinir_senha';
   static const String menu = '/menu';
   static const String vendas = '/vendas';
+  static const String estoque = '/estoque';
 }
