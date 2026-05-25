@@ -1,0 +1,551 @@
+/* ================= RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #3b2414;
+    background-color: #ffffff;
+    /* Adicionado para compensar o header fixo (exatamente a altura da topbar) */
+    padding-top: 74px; 
+}
+
+/* ================= HEADER & MENU ================= */
+.topbar {
+    width: 100%;
+    height: 74px;
+    background-color: #f5eddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Alterações para o header fixo */
+    position: fixed; 
+    top: 0;
+    left: 0;
+    
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    z-index: 9999; /* Aumentado para garantir que passe por cima de TUDO na tela */
+}
+
+.logo {
+    width: 110px;
+    height: auto;
+}
+
+/* Container do menu que fica fixo na esquerda */
+.menu-container {
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-block;
+}
+
+.menu-icon {
+    font-size: 32px;
+    color: #382519;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Caixinha de opções suspensa */
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #FAF3E0;
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 0.5rem 0;
+    z-index: 1000;
+    min-width: 160px;
+    margin-top: 18px; /* Dá um espacinho extra entre o ícone e a caixa */
+}
+
+.nav-menu.active {
+    display: block;
+}
+
+.nav-menu ul {
+    list-style: none;
+}
+
+.nav-menu a {
+    display: block;
+    padding: 12px 20px;
+    color: #4e3620;
+    text-decoration: none;
+    font-weight: 600;
+    font-family: sans-serif;
+    font-size: 1rem;
+    transition: background-color 0.2s ease;
+}
+
+.nav-menu a:hover {
+    background-color: #f3e5ca;
+}
+
+/* Ícones extras (Caso volte a usar no Header) */
+.header-icons {
+    position: absolute;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 28px;
+    color: #382519;
+}
+
+.cart-icon {
+    position: relative;
+    font-size: 25px;
+}
+
+.cart-count {
+    position: absolute;
+    top: -13px;
+    right: -12px;
+    background-color: #ef4444;
+    color: white;
+    font-size: 12px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ================= CARROSSEL ================= */
+.carousel-section {
+    background-color: #fff8e8;
+    min-height: 760px;
+    padding: 34px 0 30px;
+    text-align: center;
+}
+
+.carousel-section h1 {
+    color: #7a2d07;
+    font-size: 30px;
+    margin-bottom: 14px;
+}
+
+.subtitle {
+    color: #bd4805;
+    font-size: 20px;
+    margin-bottom: 48px;
+}
+
+.carousel-card {
+    width: 920px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 13px;
+    position: relative;
+    box-shadow: 0 17px 35px rgba(0, 0, 0, 0.18);
+}
+
+.carousel-image {
+    width: 100%;
+    height: 355px;
+    object-fit: cover;
+    display: block;
+    border-radius: 13px 13px 0 0;
+}
+
+.arrow {
+    position: absolute;
+    top: 270px;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.92);
+    color: #96420d;
+    font-size: 42px;
+    line-height: 34px;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.arrow-left { left: 16px; }
+.arrow-right { right: 16px; }
+
+.carousel-info {
+    padding: 28px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    text-align: left;
+}
+
+.carousel-info h2 {
+    color: #7a2d07;
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.carousel-info p {
+    color: #b5470a;
+    font-size: 16px;
+    margin-bottom: 24px;
+}
+
+.carousel-info strong {
+    display: block;
+    color: #f05a0a;
+    font-size: 22px;
+}
+
+.btn-cart {
+    background-color: #ff6b13;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 13px 30px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 2px;
+}
+
+.btn-cart:hover {
+    background-color: #eb5c08;
+}
+
+.dots {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    background-color: #f5d66a;
+    border-radius: 50%;
+    display: block;
+}
+
+.dot.active {
+    width: 30px;
+    border-radius: 8px;
+    background-color: #f26a13;
+}
+
+/* ================= PRODUTOS ================= */
+.produtos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem 1.5rem;
+    padding: 2rem clamp(1.5rem, 8vw, 10rem) 4rem;
+    justify-items: center;
+    background-color: #fff8f1;
+}
+
+.produtos-intro {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.produtos-intro h2 {
+    font-size: clamp(1.6rem, 4vw, 2rem);
+    font-weight: 700;
+    color: #4e3620;
+}
+
+.produtos-intro p {
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+    color: #7b5e43;
+    margin: 0.5rem auto 0;
+    max-width: 600px;
+}
+
+.produto {
+    background-color: #fffdf9;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    padding: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    width: 100%;
+    max-width: 380px;
+    
+    /* === ADICIONADO PARA CORRIGIR O ALINHAMENTO === */
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Faz o card esticar até o final do grid */
+}
+
+.produto:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.produto img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    height: auto;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-bottom: 1rem;
+}
+
+.produto h3 {
+    font-family: "Inter", sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #4e3620;
+    margin-bottom: 0.2rem;
+}
+
+.produto h4 {
+    font-family: "Inter", sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #7b5e43;
+    margin: 0.3rem 0;
+}
+
+.preco {
+    font-family: "Inter", sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #b46a28;
+    background-color: #fff1df;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+    
+    /* === ADICIONADO PARA CORRIGIR O ALINHAMENTO === */
+    margin-top: auto; /* O 'auto' aqui é a mágica: ele empurra o preço lá pro final! */
+    align-self: center; /* Mantém o formato de "pílula" centralizado no meio do card */
+}
+
+.produto:hover .preco {
+    background-color: #ffd7a3;
+}
+
+/* ================= SOBRE NÓS ================= */
+.about-section {
+    background-color: #ffffff;
+    text-align: center;
+    padding: 92px 0 96px;
+}
+
+.about-section h2 {
+    font-size: 32px;
+    color: #3b2414;
+    margin-bottom: 18px;
+}
+
+.about-subtitle {
+    color: #7d5230;
+    font-size: 21px;
+    line-height: 1.45;
+    margin-bottom: 80px;
+}
+
+.about-grid {
+    width: 68%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 88px;
+}
+
+.about-card img {
+    height: 64px;
+    margin-bottom: 24px;
+}
+
+.about-card h3 {
+    font-size: 22px;
+    color: #3b2414;
+    margin-bottom: 12px;
+}
+
+.about-card p {
+    color: #7d5230;
+    font-size: 18px;
+    line-height: 1.55;
+}
+
+/* ================= CONTATO ================= */
+.contato {
+    font-family: "Inter", sans-serif;
+    font-size: 1.05rem;
+    color: #4e3620;
+    line-height: 2;
+    padding: 2rem 1rem;
+    background-color: #fff7ef; /* Mantive a cor de fundo que já estávamos usando */
+    border-radius: 16px;
+    max-width: 600px;
+    margin: 88px auto 0; /* Mantém o mesmo espaçamento que o box anterior tinha */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.contato p {
+    margin: 0.5rem 0;
+}
+
+.contato strong {
+    color: #4e3620;
+    font-weight: 700;
+}
+
+.whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4e3620;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    vertical-align: middle; /* Ajuda a alinhar o ícone perfeitamente com o número */
+}
+
+.whatsapp:hover {
+    color: #b46a28;
+}
+
+.whatsapp img {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+}
+
+.whatsapp:hover img {
+    transform: scale(1.15);
+}
+
+/* Ajuste Responsivo para telas menores */
+@media (max-width: 900px) {
+    .contato { 
+        width: 90%; 
+        margin-top: 60px; /* Reduz um pouco o espaço superior no celular */
+    }
+}
+/* ================= FOOTER ================= */
+footer {
+    background-color: #fff7ef;
+    text-align: center;
+    padding: 34px 0;
+    color: #2e1b0f;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+/* ================= RESPONSIVO ================= */
+@media (max-width: 600px) {
+    /* Novo ajuste para o celular */
+    body { 
+        padding-top: 68px; 
+    }
+    
+    .topbar { height: 68px; }
+    .logo { width: 90px; }
+    .carousel-section h1 { font-size: 26px; }
+    .carousel-image { height: 260px; }
+    
+    .produtos {
+        grid-template-columns: 1fr;
+        padding: 2rem 1.5rem;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .carousel-card { width: 80%; }
+    .about-grid {
+        width: 82%;
+        gap: 40px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .produtos {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 2rem 4rem 3rem 4rem;
+        gap: 2rem 1.5rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .carousel-card { width: 90%; }
+    .carousel-info {
+        height: auto;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+    }
+    .btn-cart { width: 100%; }
+    .about-grid { grid-template-columns: 1fr; }
+    .contact-box { width: 90%; }
+}
+
+@media (max-width: 768px) {
+    .produtos {
+        padding: 2rem 3rem;
+        gap: 2rem 1.2rem;
+    }
+    .produto { max-width: 100%; }
+}
+
+@media (max-width: 600px) {
+    .topbar { height: 68px; }
+    .logo { width: 90px; }
+    .carousel-section h1 { font-size: 26px; }
+    .carousel-image { height: 260px; }
+    
+    .produtos {
+        grid-template-columns: 1fr;
+        padding: 2rem 1.5rem;
+        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .produtos { padding: 1.5rem 1rem; }
+    .produto { padding: 1.2rem; }
+}
+
+/* ================= BOTÃO DE CONTATO ================= */
+.btn-contato {
+    display: block;
+    width: 100%;
+    background-color: #ff6b13; /* Laranja padrão da padaria */
+    color: white;
+    border: none;
+    border-radius: 7px;
+    padding: 12px 0;
+    margin-top: 10px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    text-decoration: none; /* Tira o sublinhado do link */
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.btn-contato:hover {
+    background-color: #eb5c08; /* Laranja mais escuro no hover */
+}
+
+/* Ajuste para o botão do carrossel funcionar bem como link */
+a.btn-cart {
+    display: inline-block;
+    text-decoration: none;
+    text-align: center;
+}

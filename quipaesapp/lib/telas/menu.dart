@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
-import 'package:quipaesapp/graficos/graficoSemanal.dart' as graficoSemanal;
+import 'package:quipaesapp/widgets/graficos/graficoSemanal.dart' as graficoSemanal;
 
 class MenuWidget extends StatefulWidget {
   const MenuWidget({super.key});
@@ -56,7 +56,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                     ), 
                     _buildMenuCard(
                       onTap: (){
-                        Navigator.pushNamed(context, AppRoutes.vendas);
+                        Navigator.pushNamed(context, AppRoutes.estoque);
                       },
                       title: 'Estoque',
                       icon: Icons.inventory_2,
@@ -157,8 +157,8 @@ class _MenuWidgetState extends State<MenuWidget> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: SizedBox(
-                    width: screenWidth * 1.5,
-                    height: screenHeight * 0.40,
+                    width: screenWidth * 0.95,
+                    height: screenHeight * 0.60,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

@@ -5,6 +5,12 @@ import 'package:quipaesapp/gestao/vendas.dart';
 import 'package:quipaesapp/login/esqueci_a_senha.dart';
 import 'package:quipaesapp/login/login.dart' as login;
 import 'package:quipaesapp/login/primeiro_acesso.dart';
+import 'package:quipaesapp/telas/estoque.dart';
+import 'package:quipaesapp/telas/menu.dart';
+import 'package:quipaesapp/telas/vendas.dart';
+import 'package:quipaesapp/telas/esqueci_a_senha.dart';
+import 'package:quipaesapp/telas/login.dart' as login;
+import 'package:quipaesapp/telas/redefinir_senha.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -35,6 +41,7 @@ class MainApp extends StatelessWidget {
         AppRoutes.redefinirSenha: (context) => const Scaffold(body: PasswordFormWidget()),
         AppRoutes.menu: (context) => const Scaffold(body: MenuWidget()),
         AppRoutes.vendas: (context) => const Scaffold(body: VendasWidget()),
+        AppRoutes.estoque: (context) => const Scaffold(body: EstoqueWidget()),
       },
     );
   }

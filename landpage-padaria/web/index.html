@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padaria QuiPães</title>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="menu-container">
+        <div class="menu-icon" id="menuToggle">☰</div>
+         
+        <nav class="nav-menu" id="navMenu">
+            <ul>
+                <li><a href="#produtos">Produtos</a></li>
+                <li><a href="#sobre">Sobre Nós</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="logo-area">
+        <img src="assets/logotipo-sem-fundo-snake.png" alt="Qui Pães" class="logo">
+    </div>
+</header>
+
+<main>
+
+    <section class="carousel-section">
+        <h1>Nossos Produtos</h1>
+        <p class="subtitle">Produtos frescos direto do forno</p>
+
+        <div class="carousel-card">
+            <button class="arrow arrow-left" id="btnPrev">‹</button>
+
+            <img src="assets/Imagens/bolo.jpg" alt="Bolo" class="carousel-image" id="carouselImg" style="transition: opacity 0.3s ease;">
+
+            <button class="arrow arrow-right" id="btnNext">›</button>
+
+            <div class="carousel-info">
+                <div>
+                    <h2 id="carouselTitle">Bolo</h2>
+                    <p id="carouselDesc">Bolo de Cenoura da vovó.</p>
+                    <strong id="carouselPrice">R$ 20,20</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="dots"></div>
+    </section>
+
+    <section id="produtos" class="produtos">
+        <div class="produtos-intro">
+            <h2>Delícias fresquinhas direto da padaria</h2>
+            <p>Descubra nossos pães, doces e salgados feitos artesanalmente, com ingredientes de qualidade e muito carinho para você.</p>
+        </div>
+
+        <div id="lista-produtos" style="display: contents;"></div>
+    </section>
+
+    <section id="sobre" class="about-section">
+        <h2>Sobre Nós</h2>
+        <p class="about-subtitle">
+            Tradição e carinho em cada fornada. Conheça o que faz da nossa<br>
+            padaria um lugar especial!
+        </p>
+
+        <div class="about-grid">
+            <div class="about-card">
+                <img src="assets/Imagens/icon-1.png" alt="Pão">
+                <h3>Pão Quentinho Todos os Dias</h3>
+                <p>
+                    Nada se compara ao cheirinho de pão saindo do forno!
+                    Aqui, assamos tudo diariamente para que você sinta sempre
+                    o sabor e a textura de um produto fresco.
+                </p>
+            </div>
+
+            <div class="about-card">
+                <img src="assets/Imagens/icon-2.png" alt="Receita">
+                <h3>Sabor Feito com Cuidado</h3>
+                <p>
+                    Cada receita é preparada com ingredientes selecionados
+                    e muito carinho. O resultado? Pães e doces com aquele
+                    sabor caseiro irresistível.
+                </p>
+            </div>
+
+            <div class="about-card">
+                <img src="assets/Imagens/icon-3.png" alt="Entrega">
+                <h3>Fresquinho Até Você</h3>
+                <p>
+                    Quer aproveitar nossos produtos sem sair de casa?
+                    A gente leva até você! É só fazer seu pedido pelo telefone
+                    ou WhatsApp.
+                </p>
+            </div>
+        </div>
+
+        <div class="contato">
+            <p><strong>Horário:</strong> Segunda a Sábado, das 6h às 19h</p>
+            <p>
+                <strong>Telefone:</strong> (11) 94030-4563
+                <a href="https://wa.me/5511940304563" target="_blank" class="whatsapp">
+                    <img src="assets/Icons/icons8-whatsapp.gif" alt="WhatsApp">
+                </a>
+            </p>
+            <p>
+                <strong>Endereço:</strong>
+                <a href="https://maps.app.goo.gl/95sq657bWMtS38cA7" target="_blank" style="color: #b46a28; text-decoration: none; transition: color 0.3s;">
+                    R. José Eduardo de Souza, 46 - São Paulo/SP
+                </a>
+            </p>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>Copyright © 2003-2025</p>
+    <p>CNPJ n.º 67.733.743/0001-41 - Padaria QuiPães.</p>
+</footer>
+
+<script>
+    // ================= SCRIPT DO MENU HAMBÚRGUER =================
+    const menuToggle = document.getElementById('menuToggle');
+    const navMenu = document.getElementById('navMenu');
+
+    menuToggle.addEventListener('click', (e) => {
+        navMenu.classList.toggle('active');
+        e.stopPropagation();
+    });
+
+    document.querySelectorAll('.nav-menu a').forEach(link => {
+        link.addEventListener('click', () => {
+            navMenu.classList.remove('active');
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!navMenu.contains(e.target) && e.target !== menuToggle) {
+            navMenu.classList.remove('active');
+        }
+    });
+
+    // ================= SCRIPT DE INTEGRAÇÃO COM O SERVLET (BANCO DE DADOS) =================
+    let carouselData = [];
+    let currentIndex = 0;
+    let slideTimer;
+
+    const imgEl = document.getElementById('carouselImg');
+    const titleEl = document.getElementById('carouselTitle');
+    const descEl = document.getElementById('carouselDesc');
+    const priceEl = document.getElementById('carouselPrice');
+    const dotsContainer = document.querySelector('.dots');
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Faz a chamada assíncrona ao endpoint mapeado no seu Servlet
+        fetch('api/produtos')
+            .then(response => response.json())
+            .then(data => {
+                
+                // 1. Filtra dinamicamente os produtos que vão para o carrossel (flag_promocao = 1)
+                carouselData = data.filter(item => item.flag_promocao === 1);
+                
+                if (carouselData.length > 0) {
+                    setupDots();
+                    loadSlide(0);
+                    startTimer();
+                } else {
+                    // Oculta a área do carrossel se nenhuma promoção estiver registrada
+                    document.querySelector('.carousel-section').style.display = 'none';
+                }
+
+                // 2. Preenche a vitrine geral com todos os produtos retornados
+                const container = document.getElementById('lista-produtos');
+                let htmlCards = '';
+
+                data.forEach(produto => {
+                    let precoFormatado = produto.preco_produto.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    htmlCards += `
+                        <div class="produto">
+                            <img src="${produto.link_imagem}" alt="${produto.nome_produto}">
+                            <h3>${produto.nome_produto}</h3>
+                            <h4>${produto.descricao_produto}</h4>
+                            <p class="preco">R$ ${precoFormatado}</p>
+                        </div>
+                    `;
+                });
+                container.innerHTML = htmlCards;
+            })
+            .catch(error => console.error("Erro ao processar dados do banco de dados:", error));
+    });
+
+    // Atualiza os elementos visuais do slide atual
+    function loadSlide(index) {
+        if (carouselData.length === 0) return;
+
+        if (index < 0) currentIndex = carouselData.length - 1;
+        else if (index >= carouselData.length) currentIndex = 0;
+        else currentIndex = index;
+
+        const data = carouselData[currentIndex];
+
+        imgEl.style.opacity = '0.5';
+        
+        setTimeout(() => {
+            imgEl.src = data.link_imagem;
+            titleEl.textContent = data.nome_produto;
+            descEl.textContent = data.descricao_produto;
+            priceEl.textContent = data.preco_produto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            imgEl.style.opacity = '1';
+        }, 150);
+
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === currentIndex);
+        });
+    }
+
+    // Cria as bolinhas indicadoras mapeando o índice dos elementos em promoção
+    function setupDots() {
+        dotsContainer.innerHTML = '';
+        carouselData.forEach((_, index) => {
+            const span = document.createElement('span');
+            span.className = 'dot' + (index === 0 ? ' active' : '');
+            span.addEventListener('click', () => goToSlide(index));
+            dotsContainer.appendChild(span);
+        });
+    }
+
+    function nextSlide() {
+        loadSlide(currentIndex + 1);
+        resetTimer();
+    }
+
+    function prevSlide() {
+        loadSlide(currentIndex - 1);
+        resetTimer();
+    }
+
+    function goToSlide(index) {
+        loadSlide(index);
+        resetTimer();
+    }
+
+    function startTimer() {
+        slideTimer = setInterval(() => {
+            loadSlide(currentIndex + 1);
+        }, 5000); 
+    }
+
+    function resetTimer() {
+        clearInterval(slideTimer);
+        startTimer();
+    }
+
+    document.getElementById('btnNext').addEventListener('click', nextSlide);
+    document.getElementById('btnPrev').addEventListener('click', prevSlide);
+</script>
+
+</body>
+</html>
