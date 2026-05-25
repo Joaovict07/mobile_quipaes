@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:quipaesapp/auth_usuario.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
+import 'package:quipaesapp/databases/excel.dart';
 
 class LoginFormWidget extends StatefulWidget {
   const LoginFormWidget({super.key});
@@ -76,7 +77,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.white,
-                    hintText: 'Usuário',
+                    hintText: 'Email',
                     prefixIcon: const Icon(Icons.person_outline),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -126,6 +127,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                       onPressed: () async {
                         try {
                           await AuthUsuario().login(_userController.text, _passwordController.text);
+                          await DatabaseHelper.inicializar();
                           Navigator.pushNamed(context, AppRoutes.menu);
                         }on FirebaseAuthException catch(e) {
                           switch(e.code) {

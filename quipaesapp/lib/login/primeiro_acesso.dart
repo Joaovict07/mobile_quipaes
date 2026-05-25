@@ -1,10 +1,9 @@
-import 'dart:async';
 
+import 'package:quipaesapp/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:quipaesapp/auth_usuario.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
-import 'package:quipaesapp/login/esqueci_a_senha.dart';
 
 class PasswordFormWidget extends StatefulWidget {
   const PasswordFormWidget({super.key});
@@ -38,7 +37,7 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
     super.dispose();
   }
 
-  void redefinicaoSenha(String email, String senha) async {
+  void primeiroAcesso(String email, String senha) async {
   if (_passwordController.text != _confirmPasswordController.text) {
     print('A senha e a confirmação da senha não são iguais!');
     ScaffoldMessenger.of(context).showSnackBar(
@@ -51,21 +50,6 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
   }
 
   try {
-    final existe = await AuthUsuario().emailJaExiste(email);
-
-    if (existe) {
-      // E-mail já cadastrado → redefine a senha e volta pro login
-      await AuthUsuario().esqueceuSenha(email);
-      print('E-mail de redefinição enviado!');
-      Navigator.pushNamed(context, '/');
-      ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Email de redefinição de senha enviado!'),
-                                  backgroundColor: colorsTheme.AppColors.primary,
-                                ),
-                              );
-
-    } else {
       // E-mail não cadastrado → cadastra o usuário
       await AuthUsuario().cadastrar(email, senha);
       Navigator.pushNamed(context, '/');
@@ -75,8 +59,6 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
                                   backgroundColor: colorsTheme.AppColors.primary,
                                 ),
                               );
-    }
-
   } on FirebaseAuthException catch (e) {
     switch (e.code) {
       case 'weak-password':
@@ -236,10 +218,10 @@ class _PasswordFormWidgetState extends State<PasswordFormWidget> {
                           ),
                           onPressed: () async {
                             final email = ModalRoute.of(context)!.settings.arguments as String;
-                            redefinicaoSenha(email, _passwordController.text);
+                            primeiroAcesso(email, _passwordController.text);
                           },
                           child: const Text(
-                            'Redefinir',
+                            'Finalizar',
                             style: TextStyle(color: Colors.white, fontSize: 16),
                           ),
                         ),

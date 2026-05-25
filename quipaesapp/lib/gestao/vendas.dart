@@ -7,6 +7,7 @@ import 'package:quipaesapp/graficos/historicoVendas.dart' as historicoVendas;
 import 'menu_vendas.dart' as menuVendas;
 
 
+
 class VendasWidget extends StatefulWidget {
   const VendasWidget({super.key});
 
@@ -15,6 +16,7 @@ class VendasWidget extends StatefulWidget {
 }
 
 class _VendasWidgetState extends State<VendasWidget> {
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;

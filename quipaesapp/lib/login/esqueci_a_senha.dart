@@ -1,6 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:quipaesapp/auth_service.dart';
+import 'package:quipaesapp/auth_usuario.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import 'package:quipaesapp/routes/app_routes.dart';
+import 'package:quipaesapp/login/primeiro_acesso.dart' as redef;
 
 String? validateEmail(String? value) {
   if (value == null || value.trim().isEmpty) {
@@ -121,7 +125,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget2> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: colorsTheme.AppColors.primary,
                             ),
-                            onPressed: () {
+                            onPressed: () async {
                               final erro = validateEmail(_userController.text);
                               if (erro != null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -129,11 +133,27 @@ class _LoginFormWidgetState extends State<LoginFormWidget2> {
                                 );
                                 return;
                               }
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.redefinirSenha,
-                                arguments: _userController.text,
-                              );
+                              final emailExiste = await AuthService().redefinicaoSenha(_userController.text);
+                              
+                              if(emailExiste == 'reset') {
+                                await AuthUsuario().esqueceuSenha(_userController.text);
+                                print('E-mail de redefinição enviado!');
+                                Navigator.pushNamed(context, '/');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(
+                                                            content: Text('Email de redefinição de senha enviado!'),
+                                                            backgroundColor: colorsTheme.AppColors.primary,
+                                                          ),
+                                                        );
+                              }
+                              else {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.redefinirSenha,
+                                  arguments: _userController.text,
+                                );
+
+                              }
                             },
                             child: const Text(
                               'Avançar',
