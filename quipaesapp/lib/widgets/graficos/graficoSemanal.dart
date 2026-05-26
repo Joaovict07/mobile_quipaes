@@ -1,34 +1,50 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 
 class VendasBarChartSemana extends StatelessWidget {
-  const VendasBarChartSemana({super.key});
+  final List<Map<String, dynamic>> dados;
+
+  const VendasBarChartSemana({super.key, required this.dados});
 
   @override
   Widget build(BuildContext context) {
+    final barGroups = dados.asMap().entries.map((entry) {
+      final index = entry.key;
+      final item = entry.value;
+      final total = (item['total'] as num?)?.toDouble() ?? 0.0;
+      final cores = [
+        Color(0xFFAFC8E8),
+        Color(0xFF7FADE0),
+        Color(0xFF4F8ED6),
+        Color(0xFF2F6FC4),
+        Color(0xFF1F5AA8),
+        Color(0xFF174A8C),
+        Color(0xFF0F3870),
+      ];
+      return generateGroupData(index, total, cores[index % cores.length]);
+    }).toList();
+
+    final maxY = dados.isEmpty ? 1000.0 : dados
+        .map((e) => (e['total'] as num?)?.toDouble() ?? 0.0)
+        .reduce((a, b) => a > b ? a : b) * 1.2;
+
     return AspectRatio(
-      aspectRatio: 2, 
+      aspectRatio: 2,
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
-          maxY: 4000, 
-          
+          maxY: maxY,
           barTouchData: BarTouchData(
-            enabled:
-                true, 
+            enabled: true,
             touchTooltipData: BarTouchTooltipData(
-              getTooltipColor: (group) => Colors
-                  .black,
+              getTooltipColor: (group) => Colors.black,
               tooltipPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               tooltipMargin: 4,
               getTooltipItem: (group, groupIndex, rod, rodIndex) {
                 return BarTooltipItem(
-                  rod.toY
-                      .toInt()
-                      .toString(), 
+                  'R\$ ${rod.toY.toStringAsFixed(2)}',
                   const TextStyle(
-                    color: Colors.white, 
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -36,42 +52,23 @@ class VendasBarChartSemana extends StatelessWidget {
               },
             ),
           ),
-
-          // Configuração dos títulos (Eixos)
           titlesData: FlTitlesData(
             show: true,
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                getTitlesWidget: getBottomTitles,
+                getTitlesWidget: (value, meta) => getBottomTitles(value, meta),
               ),
             ),
             leftTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 30),
+              sideTitles: SideTitles(showTitles: true, reservedSize: 40),
             ),
-            topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            rightTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
-
-          // Configuração da grade
           gridData: const FlGridData(show: true, drawVerticalLine: false),
-
-          // Configuração da borda
           borderData: FlBorderData(show: false),
-
-          // OS DADOS DAS BARRAS
-          barGroups: [
-            generateGroupData(0, 1000, Color(0xFFAFC8E8)), // x: 0, y: 10
-            generateGroupData(1, 1800, Color(0xFF7FADE0)), // x: 1, y: 18
-            generateGroupData(2, 4000, Color(0xFF4F8ED6)), // x: 2, y: 4
-            generateGroupData(3, 1100, Color(0xFF2F6FC4)), // x: 3, y: 11
-            generateGroupData(4, 1500, Color(0xFF1F5AA8)),
-            generateGroupData(5, 2000, Color(0xFF174A8C)),
-          ],
+          barGroups: barGroups,
         ),
       ),
     );
@@ -92,37 +89,17 @@ class VendasBarChartSemana extends StatelessWidget {
   }
 
   Widget getBottomTitles(double value, TitleMeta meta) {
-    const style = TextStyle(
+    final style = const TextStyle(
       color: Colors.black54,
       fontWeight: FontWeight.bold,
       fontSize: 12,
     );
 
-    Widget text;
-    switch (value.toInt()) {
-      case 0:
-        text = const Text('SEG', style: style);
-        break;
-      case 1:
-        text = const Text('TER', style: style);
-        break;
-      case 2:
-        text = const Text('QUA', style: style);
-        break;
-      case 3:
-        text = const Text('QUI', style: style);
-        break;
-      case 4:
-        text = const Text('SEX', style: style);
-        break;
-      case 5:
-        text = const Text('SAB', style: style);
-        break;
-      default:
-        text = const Text('', style: style);
-        break;
-    }
+    final index = value.toInt();
+    final label = (index >= 0 && index < dados.length)
+        ? dados[index]['dia'].toString()
+        : '';
 
-    return SideTitleWidget(meta: meta, space: 4, child: text);
+    return SideTitleWidget(meta: meta, space: 4, child: Text(label, style: style));
   }
 }

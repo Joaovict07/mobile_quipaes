@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import 'package:quipaesapp/widgets/graficos/graficoSemanal.dart' as graficoSemanal;
+import 'package:quipaesapp/databases/db.dart';
 
 class MenuWidget extends StatefulWidget {
   const MenuWidget({super.key});
@@ -11,11 +12,34 @@ class MenuWidget extends StatefulWidget {
 }
 
 class _MenuWidgetState extends State<MenuWidget> {
+  double _vendasMes = 0.0;
+  int _pedidosPendentes = 0;
+  List<Map<String, dynamic>> _vendas7Dias = [];
+  bool _carregando = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _carregarDados();
+  }
+
+  Future<void> _carregarDados() async {
+    final vendas = await ComprasRepository.getVendasMes();
+    final pendentes = await ComprasRepository.getPedidosPendentes();
+    final grafico = await ComprasRepository.getVendas7Dias();
+
+    setState(() {
+      _vendasMes = vendas;
+      _pedidosPendentes = pendentes;
+      _vendas7Dias = grafico;
+      _carregando = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -87,7 +111,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text(
                                   'Vendas Mês Atual:',
                                   style: TextStyle(
@@ -97,7 +121,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                                 ),
                                 SizedBox(height: 4.0),
                                 Text(
-                                  'R\$ 1.250',
+                                  _carregando? '...' : 'R\$ ${_vendasMes.toStringAsFixed(2)}',
                                   style: TextStyle(
                                     color: Color(
                                       0xFF1E293B,
@@ -122,7 +146,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text(
                                   'Alertas de estoque:',
                                   style: TextStyle(
@@ -132,7 +156,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                                 ),
                                 SizedBox(height: 4.0),
                                 Text(
-                                  '12', 
+                                  _carregando? '...' : '$_pedidosPendentes',
                                   style: TextStyle(
                                     color: Color(0xFF1E293B),
                                     fontSize: 24.0,
@@ -175,7 +199,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                             vertical: screenHeight * 0.05,
                             horizontal: screenWidth * 0.05,
                           ),
-                          child: graficoSemanal.VendasBarChartSemana(),
+                          child: graficoSemanal.VendasBarChartSemana(dados: _vendas7Dias),
                         ),
                       ],
                     ),
@@ -188,6 +212,7 @@ class _MenuWidgetState extends State<MenuWidget> {
       ),
     );
   }
+
 }
 
 Widget _buildMenuCard({
