@@ -9,6 +9,7 @@ import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:quipaesapp/databases/db.dart';
 
 
 void main() async {
@@ -17,7 +18,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform
   );
-
+  await DatabaseHelper.inicializar();
   runApp(const MainApp());
 }
 

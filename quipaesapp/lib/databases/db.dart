@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
 
-Future<void> importarExcelParaDB(String caminhoArquivo) async {
+Future<void> importarExcelParaDB() async {
   final byteData = await rootBundle.load('assets/Dados_Api_Quipaes.xlsx');
   final bytes = byteData.buffer.asUint8List();
   final excel = Excel.decodeBytes(bytes);
@@ -40,7 +40,26 @@ class DatabaseHelper {
   }
   
   static Future<void> inicializar() async {
-    await importarExcelParaDB("mobile_quipaes\quipaesapp\assets\Dados_Api_Quipaes.xlsx");
+    const int versaoAtual = 1;
+    final db = await instance;
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS versao_dados (
+        id INTEGER PRIMARY KEY,
+        versao INTEGER
+      )
+    ''');
+
+    final result = await db.rawQuery('SELECT versao FROM versao_dados LIMIT 1');
+    final versaoSalva = result.isEmpty ? 0 : result.first['versao'] as int;
+
+    if (versaoSalva < versaoAtual) {
+      await db.delete('vendas');
+      await importarExcelParaDB();
+      await ComprasRepository.inserirDadosTeste();
+
+      await db.delete('versao_dados');
+      await db.insert('versao_dados', {'id': 1, 'versao': versaoAtual});
+    }
   }
 
   static Future<Database> openDB() async {
@@ -65,7 +84,11 @@ class DatabaseHelper {
       }
     );
   }
-
+  static Future<void> limparBanco() async {
+    final db = await instance;
+    await db.delete('vendas');
+    print('Banco limpo!');
+  }
 }
 
 class ComprasRepository {
@@ -73,8 +96,7 @@ class ComprasRepository {
     final db = await DatabaseHelper.instance;
     final result = await db.rawQuery('''SELECT SUM(total_pedido) as total 
     FROM vendas
-    WHERE status_compra = 2
-    AND strftime('%Y-%m', data_hora) = strftime('%Y-%m', 'now')''');
+    WHERE strftime('%Y-%m', data_hora) = strftime('%Y-%m', 'now')''');
     return (result.first['total'] as double?) ?? 0.0;
   }
 
@@ -82,7 +104,16 @@ class ComprasRepository {
     final db = await DatabaseHelper.instance;
     final result = await db.rawQuery('''SELECT COUNT(*) as total
     FROM vendas
-    WHERE status_compra = 1
+    WHERE status_compra = 1 AND strftime('%Y-%m', data_hora) = strftime('%Y-%m', 'now')
+    ''');
+    return (result.first['total'] as int?) ?? 0;
+  }
+
+  static Future<int> getPedidos() async {
+    final db = await DatabaseHelper.instance;
+    final result = await db.rawQuery('''SELECT COUNT(*) as total
+    FROM vendas
+    WHERE strftime('%Y-%m', data_hora) = strftime('%Y-%m', 'now')
     ''');
     return (result.first['total'] as int?) ?? 0;
   }
@@ -90,14 +121,107 @@ class ComprasRepository {
   static Future<List<Map<String, dynamic>>> getVendas7Dias() async {
     final db = await DatabaseHelper.instance;
     return await db.rawQuery('''
-    SELECT
-      strftime('%d/%m', data_hora) as dia,
-      SUM(total_pedido) as total
-    FROM vendas
-    WHERE status_compra = 2
-    AND data_hora >= date('now', '-7 days')
-    GROUP BY strftime('%d/%m', data_hora)
-    ORDER BY data_hora ASC
+      SELECT 
+        strftime('%d/%m', data_hora) as dia,
+        SUM(total_pedido) as total
+      FROM vendas
+      WHERE status_compra != 0
+      GROUP BY strftime('%d/%m', data_hora)
+      ORDER BY data_hora ASC
+      LIMIT 7
     ''');
+  }
+
+  static Future<List<Map<String, dynamic>>> getVendasMensal() async {
+    final db = await DatabaseHelper.instance;
+    return await db.rawQuery('''
+      SELECT 
+        CAST((strftime('%d', data_hora) - 1) / 7 AS INTEGER) as semana,
+        SUM(total_pedido) as total
+      FROM vendas
+      WHERE status_compra != 0
+      GROUP BY semana
+      ORDER BY semana ASC
+    ''');
+  }
+
+  static Future<List<Map<String, dynamic>>> getVendasAnual() async {
+    final db = await DatabaseHelper.instance;
+    return await db.rawQuery('''
+      SELECT 
+        strftime('%m', data_hora) as mes,
+        SUM(total_pedido) as total
+      FROM vendas
+      WHERE status_compra != 0
+      GROUP BY strftime('%m', data_hora)
+      ORDER BY data_hora ASC
+      LIMIT 12
+    ''');
+  }
+
+  static Future<void> inserirDadosTeste() async {
+    final db = await DatabaseHelper.instance;
+
+    final dados = [
+      {'data_hora': '2026-05-01 08:30:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 150.90, 'valor_entrega': 5},
+      {'data_hora': '2026-05-01 14:20:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 89.50, 'valor_entrega': 5},
+      {'data_hora': '2026-05-01 19:00:00.000000', 'cpf_cliente': '90019154003', 'endereco_entrega': 'Rua 45, 3131, São Paulo', 'status_compra': 1, 'total_pedido': 230.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-02 09:15:00.000000', 'cpf_cliente': '30030030030', 'endereco_entrega': 'Rua dos Peidoreiros 1', 'status_compra': 2, 'total_pedido': 217.50, 'valor_entrega': 5},
+      {'data_hora': '2026-05-02 13:40:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 67.80, 'valor_entrega': 5},
+      {'data_hora': '2026-05-02 18:00:00.000000', 'cpf_cliente': '90472265008', 'endereco_entrega': 'Rua Conselheiro Brotero, 900', 'status_compra': 0, 'total_pedido': 95.70, 'valor_entrega': 5},
+      {'data_hora': '2026-05-03 10:00:00.000000', 'cpf_cliente': '46561535839', 'endereco_entrega': 'Rua São Severo, 229', 'status_compra': 2, 'total_pedido': 312.50, 'valor_entrega': 5},
+      {'data_hora': '2026-05-03 15:30:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 45.40, 'valor_entrega': 5},
+      {'data_hora': '2026-05-04 08:00:00.000000', 'cpf_cliente': '90019154003', 'endereco_entrega': 'Rua 45, 3131, São Paulo', 'status_compra': 2, 'total_pedido': 180.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-04 12:20:00.000000', 'cpf_cliente': '43648210895', 'endereco_entrega': 'R. JOAO JANINI RODRIGUES', 'status_compra': 1, 'total_pedido': 33.30, 'valor_entrega': 5},
+      {'data_hora': '2026-05-04 20:10:00.000000', 'cpf_cliente': '30030030030', 'endereco_entrega': 'Rua dos Peidoreiros 1', 'status_compra': 2, 'total_pedido': 99.90, 'valor_entrega': 5},
+
+      {'data_hora': '2026-05-05 09:00:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 210.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-05 17:30:00.000000', 'cpf_cliente': '46561535839', 'endereco_entrega': 'Rua São Severo, 229', 'status_compra': 0, 'total_pedido': 58.90, 'valor_entrega': 5},
+      {'data_hora': '2026-05-06 11:00:00.000000', 'cpf_cliente': '90472265008', 'endereco_entrega': 'Rua Conselheiro Brotero, 900', 'status_compra': 2, 'total_pedido': 430.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-06 16:45:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 75.60, 'valor_entrega': 5},
+      {'data_hora': '2026-05-07 08:30:00.000000', 'cpf_cliente': '90019154003', 'endereco_entrega': 'Rua 45, 3131, São Paulo', 'status_compra': 1, 'total_pedido': 120.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-07 14:00:00.000000', 'cpf_cliente': '43648210895', 'endereco_entrega': 'R. JOAO JANINI RODRIGUES', 'status_compra': 2, 'total_pedido': 88.50, 'valor_entrega': 5},
+      {'data_hora': '2026-05-08 10:15:00.000000', 'cpf_cliente': '30030030030', 'endereco_entrega': 'Rua dos Peidoreiros 1', 'status_compra': 2, 'total_pedido': 340.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-08 19:00:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 55.20, 'valor_entrega': 5},
+      {'data_hora': '2026-05-09 09:30:00.000000', 'cpf_cliente': '46561535839', 'endereco_entrega': 'Rua São Severo, 229', 'status_compra': 2, 'total_pedido': 199.90, 'valor_entrega': 5},
+      {'data_hora': '2026-05-09 15:00:00.000000', 'cpf_cliente': '90472265008', 'endereco_entrega': 'Rua Conselheiro Brotero, 900', 'status_compra': 0, 'total_pedido': 41.20, 'valor_entrega': 5},
+      {'data_hora': '2026-05-10 11:30:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 278.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-10 20:00:00.000000', 'cpf_cliente': '90019154003', 'endereco_entrega': 'Rua 45, 3131, São Paulo', 'status_compra': 2, 'total_pedido': 92.30, 'valor_entrega': 5},
+      {'data_hora': '2026-05-11 08:00:00.000000', 'cpf_cliente': '43648210895', 'endereco_entrega': 'R. JOAO JANINI RODRIGUES', 'status_compra': 1, 'total_pedido': 63.70, 'valor_entrega': 5},
+
+      {'data_hora': '2026-05-12 09:00:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 415.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-12 14:30:00.000000', 'cpf_cliente': '30030030030', 'endereco_entrega': 'Rua dos Peidoreiros 1', 'status_compra': 2, 'total_pedido': 130.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-13 10:00:00.000000', 'cpf_cliente': '46561535839', 'endereco_entrega': 'Rua São Severo, 229', 'status_compra': 2, 'total_pedido': 87.40, 'valor_entrega': 5},
+      {'data_hora': '2026-05-13 18:00:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 1, 'total_pedido': 310.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-14 08:30:00.000000', 'cpf_cliente': '90472265008', 'endereco_entrega': 'Rua Conselheiro Brotero, 900', 'status_compra': 2, 'total_pedido': 560.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-14 13:00:00.000000', 'cpf_cliente': '90019154003', 'endereco_entrega': 'Rua 45, 3131, São Paulo', 'status_compra': 2, 'total_pedido': 44.80, 'valor_entrega': 5},
+      {'data_hora': '2026-05-15 09:15:00.000000', 'cpf_cliente': '43648210895', 'endereco_entrega': 'R. JOAO JANINI RODRIGUES', 'status_compra': 0, 'total_pedido': 72.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-15 17:00:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 198.50, 'valor_entrega': 5},
+      {'data_hora': '2026-05-16 11:00:00.000000', 'cpf_cliente': '30030030030', 'endereco_entrega': 'Rua dos Peidoreiros 1', 'status_compra': 2, 'total_pedido': 320.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-16 20:30:00.000000', 'cpf_cliente': '46561535839', 'endereco_entrega': 'Rua São Severo, 229', 'status_compra': 2, 'total_pedido': 145.60, 'valor_entrega': 5},
+
+      {'data_hora': '2026-05-19 08:00:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 389.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-19 15:30:00.000000', 'cpf_cliente': '90019154003', 'endereco_entrega': 'Rua 45, 3131, São Paulo', 'status_compra': 1, 'total_pedido': 110.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-20 09:00:00.000000', 'cpf_cliente': '90472265008', 'endereco_entrega': 'Rua Conselheiro Brotero, 900', 'status_compra': 2, 'total_pedido': 275.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-20 14:00:00.000000', 'cpf_cliente': '43648210895', 'endereco_entrega': 'R. JOAO JANINI RODRIGUES', 'status_compra': 2, 'total_pedido': 98.70, 'valor_entrega': 5},
+      {'data_hora': '2026-05-21 10:30:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 430.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-21 19:00:00.000000', 'cpf_cliente': '30030030030', 'endereco_entrega': 'Rua dos Peidoreiros 1', 'status_compra': 0, 'total_pedido': 55.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-22 08:30:00.000000', 'cpf_cliente': '46561535839', 'endereco_entrega': 'Rua São Severo, 229', 'status_compra': 2, 'total_pedido': 167.30, 'valor_entrega': 5},
+      {'data_hora': '2026-05-22 13:00:00.000000', 'cpf_cliente': '90019154003', 'endereco_entrega': 'Rua 45, 3131, São Paulo', 'status_compra': 2, 'total_pedido': 310.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-23 09:00:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 1, 'total_pedido': 88.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-23 16:00:00.000000', 'cpf_cliente': '90472265008', 'endereco_entrega': 'Rua Conselheiro Brotero, 900', 'status_compra': 2, 'total_pedido': 245.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-24 10:00:00.000000', 'cpf_cliente': '43648210895', 'endereco_entrega': 'R. JOAO JANINI RODRIGUES', 'status_compra': 2, 'total_pedido': 178.50, 'valor_entrega': 5},
+      {'data_hora': '2026-05-24 18:30:00.000000', 'cpf_cliente': '30030030030', 'endereco_entrega': 'Rua dos Peidoreiros 1', 'status_compra': 2, 'total_pedido': 390.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-25 09:30:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 512.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-25 14:00:00.000000', 'cpf_cliente': '46561535839', 'endereco_entrega': 'Rua São Severo, 229', 'status_compra': 1, 'total_pedido': 67.80, 'valor_entrega': 5},
+      {'data_hora': '2026-05-26 08:00:00.000000', 'cpf_cliente': '90019154003', 'endereco_entrega': 'Rua 45, 3131, São Paulo', 'status_compra': 2, 'total_pedido': 299.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-26 17:00:00.000000', 'cpf_cliente': '50897126390', 'endereco_entrega': 'Rua Camatei 19, Vila Nivi, SP', 'status_compra': 2, 'total_pedido': 143.20, 'valor_entrega': 5},
+      {'data_hora': '2026-05-27 09:00:00.000000', 'cpf_cliente': '90472265008', 'endereco_entrega': 'Rua Conselheiro Brotero, 900', 'status_compra': 2, 'total_pedido': 330.00, 'valor_entrega': 5},
+      {'data_hora': '2026-05-27 15:30:00.000000', 'cpf_cliente': '43648210895', 'endereco_entrega': 'R. JOAO JANINI RODRIGUES', 'status_compra': 1, 'total_pedido': 78.90, 'valor_entrega': 5},
+    ];
+
+    for (final dado in dados) {
+      await db.insert('vendas', dado, conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
   }
 }

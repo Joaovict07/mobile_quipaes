@@ -5,6 +5,7 @@ import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import 'package:quipaesapp/widgets/graficos/graficoDinamico.dart' as graficoDinamico;
 import 'package:quipaesapp/widgets/graficos/historicoVendas.dart' as historicoVendas;
 import '../widgets/menu_vendas.dart' as menuVendas;
+import 'package:quipaesapp/databases/db.dart';
 
 
 
@@ -16,12 +17,33 @@ class VendasWidget extends StatefulWidget {
 }
 
 class _VendasWidgetState extends State<VendasWidget> {
+  double _vendasMes = 0.0;
+  int _pedidos = 0;
+  List<Map<String, dynamic>> _vendas7Dias = [];
+  bool _carregando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarDados();
+  }
+
+  Future<void> _carregarDados() async {
+    final vendas = await ComprasRepository.getVendasMes();
+    final pedidos = await ComprasRepository.getPedidos();
+
+    setState(() {
+      _vendasMes = vendas;
+      _pedidos = pedidos;
+      _carregando = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-
+  
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -65,22 +87,22 @@ class _VendasWidgetState extends State<VendasWidget> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text(
                                   'Vendas:',
                                   style: TextStyle(
                                     color: Colors.black54,
-                                    fontSize: 16.0,
+                                    fontSize: 14.0,
                                   ),
                                 ),
                                 SizedBox(height: 4.0),
                                 Text(
-                                  'R\$ 1.250',
+                                  _carregando ? '...' : 'R\$ ${_vendasMes.toStringAsFixed(2)}' ,
                                   style: TextStyle(
                                     color: Color(
                                       0xFF1E293B,
                                     ), 
-                                    fontSize: 24.0,
+                                    fontSize: 16.0,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -100,20 +122,20 @@ class _VendasWidgetState extends State<VendasWidget> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
+                              children: [
                                 Text(
                                   'Quantidade de vendas:',
                                   style: TextStyle(
                                     color: Colors.black54,
-                                    fontSize: 16.0,
+                                    fontSize: 14.0,
                                   ),
                                 ),
                                 SizedBox(height: 4.0),
                                 Text(
-                                  '12', 
+                                  _carregando ? '...' : _pedidos.toString(), 
                                   style: TextStyle(
                                     color: Color(0xFF1E293B),
-                                    fontSize: 24.0,
+                                    fontSize: 16.0,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -128,15 +150,15 @@ class _VendasWidgetState extends State<VendasWidget> {
 
                 SizedBox(height: screenHeight * 0.05),
               
-              //Gráfico
+              // Gráfico
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: SizedBox(
-                    width: screenWidth * 1.5,
-                    height: screenHeight * 0.45,
+                    width: screenWidth * 0.9,
+                    height: screenHeight * 0.55,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -167,22 +189,10 @@ class _VendasWidgetState extends State<VendasWidget> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: SizedBox(
-                    width: screenWidth * 1.5,
-                    height: screenHeight * 0.55,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: EdgeInsetsGeometry.symmetric(
-                            horizontal: screenWidth * 0.05,
-                          ),
-                          child: historicoVendas.HistoricoVendasWidget(),
-                        ),
-                      ],
-                    ),
-                  ),
+                  width: screenWidth * 0.9,
+                  child: historicoVendas.HistoricoVendasWidget()
                 ),
+                SizedBox(height: screenHeight * 0.05,)
               ],
             ),
           ),

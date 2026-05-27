@@ -20,6 +20,7 @@ class _MenuWidgetState extends State<MenuWidget> {
   @override
   void initState() {
     super.initState();
+    // DatabaseHelper.limparBanco().then((_) => _carregarDados());
     _carregarDados();
   }
 
@@ -116,7 +117,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                                   'Vendas Mês Atual:',
                                   style: TextStyle(
                                     color: Colors.black54,
-                                    fontSize: 16.0,
+                                    fontSize: 14.0,
                                   ),
                                 ),
                                 SizedBox(height: 4.0),
@@ -126,7 +127,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                                     color: Color(
                                       0xFF1E293B,
                                     ), 
-                                    fontSize: 24.0,
+                                    fontSize: 16.0,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -151,7 +152,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                                   'Alertas de estoque:',
                                   style: TextStyle(
                                     color: Colors.black54,
-                                    fontSize: 16.0,
+                                    fontSize: 14.0,
                                   ),
                                 ),
                                 SizedBox(height: 4.0),
@@ -159,7 +160,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                                   _carregando? '...' : '$_pedidosPendentes',
                                   style: TextStyle(
                                     color: Color(0xFF1E293B),
-                                    fontSize: 24.0,
+                                    fontSize: 16.0,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -176,6 +177,7 @@ class _MenuWidgetState extends State<MenuWidget> {
               
               //Gráfico
                 Container(
+                  clipBehavior: Clip.hardEdge,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),

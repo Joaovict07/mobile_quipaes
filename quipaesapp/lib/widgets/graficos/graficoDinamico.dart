@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
+import 'package:quipaesapp/databases/db.dart';
 
 enum ViewType { semana, mes, ano }
 
@@ -13,6 +14,30 @@ class GraficoGestaoDinamico extends StatefulWidget {
 
 class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
   ViewType selectedView = ViewType.semana;
+
+  List<Map<String, dynamic>> _dadosSemana = [];
+  List<Map<String, dynamic>> _dadosMes = [];
+  List<Map<String, dynamic>> _dadosAno = [];
+  bool _carregando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarDados();
+  }
+
+  Future<void> _carregarDados() async {
+    final semana = await ComprasRepository.getVendas7Dias();
+    final mes = await ComprasRepository.getVendasMensal();
+    final ano = await ComprasRepository.getVendasAnual();
+
+    setState(() {
+      _dadosSemana = semana;
+      _dadosMes = mes;
+      _dadosAno = ano;
+      _carregando = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,12 +112,18 @@ class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
         break;
       case ViewType.ano:
         switch (value.toInt()) {
-          case 0: text = 'JAN'; break;
-          case 2: text = 'MAR'; break;
-          case 4: text = 'MAI'; break;
-          case 6: text = 'JUL'; break;
-          case 8: text = 'SET'; break;
-          case 10: text = 'NOV'; break;
+          case 01: text = 'JAN'; break;
+          case 02: text = 'FEV'; break;
+          case 03: text = 'MAR'; break;
+          case 04: text = 'ABR'; break;
+          case 05: text = 'MAI'; break;
+          case 06: text = 'JUN'; break;
+          case 07: text = 'JUL'; break;
+          case 08: text = 'AGO'; break;
+          case 09: text = 'SET'; break;
+          case 10: text = 'OUT'; break;
+          case 11: text = 'NOV'; break;
+          case 12: text = 'DEZ'; break;
         }
         break;
     }
@@ -103,11 +134,22 @@ class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
   // Dados
   List<BarChartGroupData> _getBarGroups() {
     if (selectedView == ViewType.semana) {
-      return List.generate(7, (i) => _makeGroupData(i, (i + 1) * 200.0));
+      return _dadosSemana.asMap().entries.map<BarChartGroupData>((entry) {
+        final total = (entry.value['total'] as num?)?.toDouble() ?? 0.0;
+        return _makeGroupData(entry.key, total);
+      }).toList();
     } else if (selectedView == ViewType.mes) {
-      return List.generate(4, (i) => _makeGroupData(i, (i + 1) * 2500.0));
+      return _dadosMes.map<BarChartGroupData>((item) {
+        final semana = (item['semana'] as int?) ?? 0;
+        final total = (item['total'] as num?)?.toDouble() ?? 0.0;
+        return _makeGroupData(semana, total);
+      }).toList();
     } else {
-      return List.generate(12, (i) => _makeGroupData(i, (i + 1) * 10000.0));
+      return _dadosAno.map<BarChartGroupData>((item) {
+        final mes = int.tryParse(item['mes'].toString()) ?? 0;
+        final total = (item['total'] as num?)?.toDouble() ?? 0.0;
+        return _makeGroupData(mes, total);
+      }).toList();
     }
   }
 

@@ -57,6 +57,7 @@ class VendasBarChartSemana extends StatelessWidget {
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
+                reservedSize: 30,
                 getTitlesWidget: (value, meta) => getBottomTitles(value, meta),
               ),
             ),
@@ -92,7 +93,7 @@ class VendasBarChartSemana extends StatelessWidget {
     final style = const TextStyle(
       color: Colors.black54,
       fontWeight: FontWeight.bold,
-      fontSize: 12,
+      fontSize: 10,
     );
 
     final index = value.toInt();
@@ -100,6 +101,6 @@ class VendasBarChartSemana extends StatelessWidget {
         ? dados[index]['dia'].toString()
         : '';
 
-    return SideTitleWidget(meta: meta, space: 4, child: Text(label, style: style));
+    return SideTitleWidget(meta: meta, space: 8, child: Text(label, style: style));
   }
 }
