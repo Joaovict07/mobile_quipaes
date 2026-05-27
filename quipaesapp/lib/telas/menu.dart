@@ -3,6 +3,7 @@ import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import 'package:quipaesapp/widgets/graficos/graficoSemanal.dart' as graficoSemanal;
 import 'package:quipaesapp/databases/db.dart';
+import 'package:intl/intl.dart';
 
 class MenuWidget extends StatefulWidget {
   const MenuWidget({super.key});
@@ -16,7 +17,7 @@ class _MenuWidgetState extends State<MenuWidget> {
   int _pedidosPendentes = 0;
   List<Map<String, dynamic>> _vendas7Dias = [];
   bool _carregando = true;
-  
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +37,10 @@ class _MenuWidgetState extends State<MenuWidget> {
       _carregando = false;
     });
   }
+  final formatadorMoeda = NumberFormat.currency(
+    locale: 'pt_BR',
+    symbol: 'R\$',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -56,10 +61,10 @@ class _MenuWidgetState extends State<MenuWidget> {
       body: Container(
         decoration: BoxDecoration(color: colorsTheme.AppColors.background),
         width: double.infinity,
-        height: double.infinity,  
+        height: double.infinity,
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24),
             child: Column(
               children: [
                 SizedBox(height: screenHeight * 0.12),
@@ -73,12 +78,12 @@ class _MenuWidgetState extends State<MenuWidget> {
                         Navigator.pushNamed(context, AppRoutes.vendas);
                       },
                       title: 'Vendas',
-                      icon: Icons.point_of_sale, 
+                      icon: Icons.point_of_sale,
                       screenWidth: screenWidth,
                     ),
                     SizedBox(
                       width: screenWidth * 0.05,
-                    ), 
+                    ),
                     _buildMenuCard(
                       onTap: (){
                         Navigator.pushNamed(context, AppRoutes.estoque);
@@ -95,10 +100,10 @@ class _MenuWidgetState extends State<MenuWidget> {
                 // BigNumbers
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white, 
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(
                       12,
-                    ), 
+                    ),
                   ),
                   child: SizedBox(
                     width: screenWidth * 0.9,
@@ -122,11 +127,11 @@ class _MenuWidgetState extends State<MenuWidget> {
                                 ),
                                 SizedBox(height: 4.0),
                                 Text(
-                                  _carregando? '...' : 'R\$ ${_vendasMes.toStringAsFixed(2)}',
+                                  _carregando? '...' : formatadorMoeda.format(_vendasMes),
                                   style: TextStyle(
                                     color: Color(
                                       0xFF1E293B,
-                                    ), 
+                                    ),
                                     fontSize: 16.0,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -138,34 +143,31 @@ class _MenuWidgetState extends State<MenuWidget> {
                         const VerticalDivider(
                           color: Colors.black12,
                           thickness: 1,
-                          indent: 24, 
-                          endIndent: 24, 
+                          indent: 24,
+                          endIndent: 24,
                         ),
                         Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 24.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Alertas de estoque:',
-                                  style: TextStyle(
-                                    color: Colors.black54,
-                                    fontSize: 14.0,
-                                  ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Alertas de estoque:',
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 14.0,
                                 ),
-                                SizedBox(height: 4.0),
-                                Text(
-                                  _carregando? '...' : '$_pedidosPendentes',
-                                  style: TextStyle(
-                                    color: Color(0xFF1E293B),
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              ),
+                              SizedBox(height: 4.0),
+                              Text(
+                                _carregando? '...' : '$_pedidosPendentes',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -174,8 +176,8 @@ class _MenuWidgetState extends State<MenuWidget> {
                 ),
 
                 SizedBox(height: screenHeight * 0.05),
-              
-              //Gráfico
+
+                //Gráfico
                 Container(
                   clipBehavior: Clip.hardEdge,
                   decoration: BoxDecoration(
@@ -184,18 +186,18 @@ class _MenuWidgetState extends State<MenuWidget> {
                   ),
                   child: SizedBox(
                     width: screenWidth * 0.95,
-                    height: screenHeight * 0.60,
+                    height: screenHeight * 0.40,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Padding(
                           padding: EdgeInsetsGeometry.symmetric(
-                            vertical: 10
+                              vertical: 10
                           ),
 
                           child: Text('Vendas nos últimos 7 dias', style: TextStyle(color: Colors.black54, fontSize: 16.0)),
                         ),
-                        
+
                         Padding(
                           padding: EdgeInsetsGeometry.symmetric(
                             vertical: screenHeight * 0.05,
@@ -238,7 +240,7 @@ Widget _buildMenuCard({
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap:
-          onTap, 
+        onTap,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
