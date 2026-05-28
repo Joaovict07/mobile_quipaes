@@ -34,7 +34,8 @@ class Product {
 }
 
 class AddProductSheet extends StatefulWidget {
-  const AddProductSheet({super.key});
+  final Map<String, dynamic>? productToEdit;
+  const AddProductSheet({super.key, this.productToEdit});
 
   @override
   State<AddProductSheet> createState() => _AddProductSheetState();
@@ -49,6 +50,34 @@ class _AddProductSheetState extends State<AddProductSheet> {
   ProductCategory _category = ProductCategory.food;
   DateTime _expirationDate = DateTime.now();
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.productToEdit != null) {
+      final p = widget.productToEdit!;
+      _nameCtrl.text = p['produto'] ?? '';
+      _quantityCtrl.text = (p['quantidade'] ?? 0).toString();
+      _priceCtrl.text = (p['preco'] ?? 0.0).toStringAsFixed(2).replaceAll('.', ',');
+
+      _category = ProductCategory.values.firstWhere(
+        (c) => c.label == p['categoria'],
+        orElse: () => ProductCategory.food,
+      );
+
+      try {
+        final partes = (p['validade'] as String).split('/');
+        if (partes.length == 3) {
+          _expirationDate = DateTime(
+            int.parse(partes[2]),
+            int.parse(partes[1]),
+            int.parse(partes[0]),
+          );
+        }
+      } catch (e) {
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -86,9 +115,9 @@ class _AddProductSheetState extends State<AddProductSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Novo Produto',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              Text(
+                widget.productToEdit != null ? 'Editar Produto' : 'Novo Produto',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 20),
 
@@ -198,6 +227,7 @@ class _AddProductSheetState extends State<AddProductSheet> {
 
     try {
       final dadosProduto = {
+        if (widget.productToEdit != null) 'id': widget.productToEdit!['id'],
         'nome': _nameCtrl.text.trim(),
         'categoria': _category.label,
         'quantidade': int.parse(_quantityCtrl.text),
@@ -212,8 +242,10 @@ class _AddProductSheetState extends State<AddProductSheet> {
         setState(() => _loading = false);
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Produto adicionado com sucesso!'),
+          SnackBar(
+            content: Text(widget.productToEdit != null
+                ? 'Produto atualizado com sucesso!'
+                : 'Produto adicionado com sucesso!'),
             backgroundColor: Colors.green,
           ),
         );

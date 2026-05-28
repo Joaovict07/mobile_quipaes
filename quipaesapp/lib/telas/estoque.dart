@@ -158,7 +158,21 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
                 icon: Icons.edit_outlined,
                 label: 'Editar produto',
                 color: const Color(0xFF1E293B),
-                onTap: () => Navigator.pop(context),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final result = await showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => menuEstoque.AddProductSheet(
+                      productToEdit: produto,
+                    ),
+                  );
+
+                  if (result == true) {
+                    _carregarProdutos();
+                  }
+                },
               ),
               const SizedBox(height: 8),
               _buildBottomSheetAction(
