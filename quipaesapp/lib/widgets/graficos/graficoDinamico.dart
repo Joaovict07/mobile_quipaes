@@ -4,7 +4,7 @@ import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import 'package:quipaesapp/databases/db.dart';
 import 'package:intl/intl.dart';
 
-enum ViewType { semana, mes, ano }
+enum ViewType { mes, ano }
 
 final formatadorMoeda = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
@@ -16,9 +16,8 @@ class GraficoGestaoDinamico extends StatefulWidget {
 }
 
 class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
-  ViewType selectedView = ViewType.semana;
+  ViewType selectedView = ViewType.mes;
 
-  List<Map<String, dynamic>> _dadosSemana = [];
   List<Map<String, dynamic>> _dadosMes = [];
   List<Map<String, dynamic>> _dadosAno = [];
   bool _carregando = true;
@@ -30,12 +29,10 @@ class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
   }
 
   Future<void> _carregarDados() async {
-    final semana = await ComprasRepository.getVendas7Dias();
     final mes = await ComprasRepository.getVendasMensal();
     final ano = await ComprasRepository.getVendasAnual();
 
     setState(() {
-      _dadosSemana = semana;
       _dadosMes = mes;
       _dadosAno = ano;
       _carregando = false;
@@ -55,7 +52,6 @@ class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
               selectedForegroundColor: Colors.white,
             ),
             segments: const [
-              ButtonSegment(value: ViewType.semana, label: Text('Semana', style: TextStyle(fontSize: 13)), icon: Icon(Icons.calendar_view_week)),
               ButtonSegment(value: ViewType.mes, label: Text('Mês', style: TextStyle(fontSize: 13)), icon: Icon(Icons.calendar_view_month)),
               ButtonSegment(value: ViewType.ano, label: Text('Ano', style: TextStyle(fontSize: 13)), icon: Icon(Icons.calendar_today)),
             ],
@@ -128,17 +124,6 @@ class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
     String text = '';
 
     switch (selectedView) {
-      case ViewType.semana:
-        switch (value.toInt()) {
-          case 0: text = 'SEG'; break;
-          case 1: text = 'TER'; break;
-          case 2: text = 'QUA'; break;
-          case 3: text = 'QUI'; break;
-          case 4: text = 'SEX'; break;
-          case 5: text = 'SÁB'; break;
-          case 6: text = 'DOM'; break;
-        }
-        break;
       case ViewType.mes:
         text = 'S${(value.toInt() + 1)}';
         break;
@@ -160,17 +145,12 @@ class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
         break;
     }
 
-    return SideTitleWidget(meta:meta, space: 10, child: Text(text, style: style));
+    return SideTitleWidget(meta: meta, space: 10, child: Text(text, style: style));
   }
 
   // Dados
   List<BarChartGroupData> _getBarGroups() {
-    if (selectedView == ViewType.semana) {
-      return _dadosSemana.asMap().entries.map<BarChartGroupData>((entry) {
-        final total = (entry.value['total'] as num?)?.toDouble() ?? 0.0;
-        return _makeGroupData(entry.key, total);
-      }).toList();
-    } else if (selectedView == ViewType.mes) {
+    if (selectedView == ViewType.mes) {
       return _dadosMes.map<BarChartGroupData>((item) {
         final semana = (item['semana'] as int?) ?? 0;
         final total = (item['total'] as num?)?.toDouble() ?? 0.0;
@@ -200,9 +180,22 @@ class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
   }
 
   double _getMaxY() {
-    if (selectedView == ViewType.semana) return 2000;
-    if (selectedView == ViewType.mes) return 15000;
-    return 150000;
+    double maxTotal = 0.0;
+
+    if (selectedView == ViewType.mes) {
+      for (var item in _dadosMes) {
+        final total = (item['total'] as num?)?.toDouble() ?? 0.0;
+        if (total > maxTotal) maxTotal = total;
+      }
+    } else {
+      for (var item in _dadosAno) {
+        final total = (item['total'] as num?)?.toDouble() ?? 0.0;
+        if (total > maxTotal) maxTotal = total;
+      }
+    }
+
+    // Retorna um mínimo de 100 se estiver vazio, caso contrário adiciona 20% de margem
+    return maxTotal == 0.0 ? 100.0 : maxTotal * 1.2;
   }
 
   FlTitlesData _getTitlesData() {
