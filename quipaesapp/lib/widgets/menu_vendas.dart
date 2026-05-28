@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quipaesapp/databases/db.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
+import 'package:quipaesapp/telas/vendas.dart' as vendas;
 
 enum TransactionType {
   expense('Despesa', Colors.red, Icons.remove_circle_outline),
@@ -77,7 +78,8 @@ class Transaction {
 }
 
 class AddTransactionSheet extends StatefulWidget {
-  const AddTransactionSheet({super.key});
+  final VoidCallback? onVendaSalva;
+  const AddTransactionSheet({super.key, this.onVendaSalva});
 
   @override
   State<AddTransactionSheet> createState() => _AddTransactionSheetState();
@@ -235,6 +237,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
       if (mounted) {
         setState(() => _loading = false);
         Navigator.of(context).pop();
+        widget.onVendaSalva?.call();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Venda criada!'),
@@ -366,7 +369,8 @@ class _DatePicker extends StatelessWidget {
 }
 
 class AddTransactionFab extends StatelessWidget {
-  const AddTransactionFab({super.key});
+  final VoidCallback? onVendaSalva;
+  const AddTransactionFab({super.key, this.onVendaSalva});
 
   @override
   Widget build(BuildContext context) {
@@ -376,7 +380,9 @@ class AddTransactionFab extends StatelessWidget {
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
-          builder: (_) => const AddTransactionSheet(),
+          builder: (_) => AddTransactionSheet(
+            onVendaSalva: onVendaSalva,
+          ),
         );
       },
       icon: const Icon(Icons.add_rounded),

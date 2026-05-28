@@ -199,7 +199,9 @@ class _VendasWidgetState extends State<VendasWidget> {
           ),
         ),
       ),
-      floatingActionButton: AddTransactionFab(),
+      floatingActionButton: AddTransactionFab(
+        onVendaSalva: () => _carregarDados(),
+      ),
     );
   }
 }
@@ -245,7 +247,8 @@ Widget _buildMenuCard({
 }
 
 class AddTransactionFab extends StatelessWidget {
-  const AddTransactionFab({super.key});
+  final VoidCallback? onVendaSalva;
+  const AddTransactionFab({super.key, this.onVendaSalva});
 
   @override
   Widget build(BuildContext context) {
@@ -255,7 +258,9 @@ class AddTransactionFab extends StatelessWidget {
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
-          builder: (context) => const menuVendas.AddTransactionSheet(),
+          builder: (context) => menuVendas.AddTransactionSheet(
+            onVendaSalva: onVendaSalva,
+          ),
         );
       },
       backgroundColor: colorsTheme.AppColors.primary,

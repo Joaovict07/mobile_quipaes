@@ -42,10 +42,6 @@ class DatabaseHelper {
   
   static Future<void> inicializar() async {
     const int versaoAtual = 2;
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'vendas.db');
-    await deleteDatabase(path);
-    _db = null;
     final db = await instance;
 
     await db.execute('''
