@@ -89,7 +89,9 @@ class _MenuWidgetState extends State<MenuWidget> {
                     ),
                     _buildMenuCard(
                       onTap: (){
-                        Navigator.pushNamed(context, AppRoutes.estoque);
+                        Navigator.pushNamed(context, AppRoutes.estoque).then((_) {
+                          _carregarDados();
+                        });
                       },
                       title: 'Estoque',
                       icon: Icons.inventory_2,
