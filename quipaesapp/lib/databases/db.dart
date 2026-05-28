@@ -43,6 +43,8 @@ class DatabaseHelper {
     const int versaoAtual = 2;
     final db = await instance;
 
+
+
     final result = await db.rawQuery('SELECT versao FROM versao_dados LIMIT 1');
     final versaoSalva = result.isEmpty ? 0 : result.first['versao'] as int;
 
@@ -345,12 +347,12 @@ class ProdutosRepository {
       final validadeStr = p['validade'] as String?;
       if (validadeStr != null) {
         try {
-          final partes = validadeStr.split('/');
+          final partes = validadeStr.split('-');
           if (partes.length == 3) {
             final dataValidade = DateTime(
-              int.parse(partes[2]),
-              int.parse(partes[1]),
               int.parse(partes[0]),
+              int.parse(partes[1]),
+              int.parse(partes[2]),
             );
             if (dataValidade.isBefore(limiteVencimento)) {
               vencendoLogo++;
