@@ -17,6 +17,7 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
   static const int _itensPorPagina = 12;
 
   List<Map<String, dynamic>> _produtos = [];
+  Map<String, int> _estatisticas = {'total': 0, 'baixo': 0, 'vencendo': 0};
 
   @override
   void initState() {
@@ -26,7 +27,9 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
 
   Future<void> _carregarProdutos() async {
     final dados = await ProdutosRepository.listar();
+    final stats = await ProdutosRepository.getEstatisticas();
     setState(() {
+      _estatisticas = stats;
       _produtos = dados.map((e) {
         return {
           'id': e['id'],
@@ -320,7 +323,7 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
                             children: [
                               _buildSmallAlert(
                                 label: 'Em estoque',
-                                value: '5.000',
+                                value: _estatisticas['total'].toString(),
                                 icon: Icons.inventory_2_outlined,
                                 color: colorsTheme.AppColors.primary,
                               ),
@@ -341,14 +344,14 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
                             children: [
                               _buildSmallAlert(
                                 label: 'Estoque baixo',
-                                value: '8',
+                                value: _estatisticas['baixo'].toString(),
                                 icon: Icons.trending_down_rounded,
                                 color: const Color(0xFFEF4444),
                               ),
                               const SizedBox(height: 12),
                               _buildSmallAlert(
                                 label: 'Vencendo logo',
-                                value: '4',
+                                value: _estatisticas['vencendo'].toString(),
                                 icon: Icons.event_busy_rounded,
                                 color: const Color(0xFFF59E0B),
                               ),

@@ -305,4 +305,45 @@ class ProdutosRepository {
     final db = await DatabaseHelper.instance;
     await db.delete('produtos', where: 'id = ?', whereArgs: [id]);
   }
+
+  static Future<Map<String, int>> getEstatisticas() async {
+    final db = await DatabaseHelper.instance;
+
+    final totalResult = await db.rawQuery('SELECT SUM(quantidade) as total FROM produtos');
+    final totalEstoque = (totalResult.first['total'] as num?)?.toInt() ?? 0;
+
+    final baixoResult = await db.rawQuery('SELECT COUNT(*) as total FROM produtos WHERE quantidade < 50');
+    final estoqueBaixo = (baixoResult.first['total'] as num?)?.toInt() ?? 0;
+
+    final todosProdutos = await db.query('produtos');
+    int vencendoLogo = 0;
+    final hoje = DateTime.now();
+    final limiteVencimento = hoje.add(const Duration(days: 7));
+
+    for (var p in todosProdutos) {
+      final validadeStr = p['validade'] as String?;
+      if (validadeStr != null) {
+        try {
+          final partes = validadeStr.split('/');
+          if (partes.length == 3) {
+            final dataValidade = DateTime(
+              int.parse(partes[2]),
+              int.parse(partes[1]),
+              int.parse(partes[0]),
+            );
+            if (dataValidade.isBefore(limiteVencimento)) {
+              vencendoLogo++;
+            }
+          }
+        } catch (e) {
+        }
+      }
+    }
+
+    return {
+      'total': totalEstoque,
+      'baixo': estoqueBaixo,
+      'vencendo': vencendoLogo,
+    };
+  }
 }
