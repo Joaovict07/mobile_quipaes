@@ -23,6 +23,7 @@ class _VendasWidgetState extends State<VendasWidget> {
   List<Map<String, dynamic>> _vendas7Dias = [];
   bool _carregando = true;
   int _historicoVersion = 0;
+  int _graficoVersion = 0;
 
   @override
   void initState() {
@@ -176,7 +177,10 @@ class _VendasWidgetState extends State<VendasWidget> {
                           padding: EdgeInsetsGeometry.symmetric(
                             horizontal: screenWidth * 0.05,
                           ),
-                          child: graficoDinamico.GraficoGestaoDinamico(),
+                          child: graficoDinamico.GraficoGestaoDinamico(
+                            key: ValueKey(_graficoVersion),
+                            onVendaSalva: () { _carregarDados(); },
+                          ),
                         ),
                       ],
                     ),
@@ -206,7 +210,10 @@ class _VendasWidgetState extends State<VendasWidget> {
       floatingActionButton: AddTransactionFab(
         onVendaSalva: () { 
           _carregarDados();
-          setState(() => _historicoVersion++);
+          setState(() { 
+            _historicoVersion++;
+            _graficoVersion++;
+          });
         },
       ),
     );

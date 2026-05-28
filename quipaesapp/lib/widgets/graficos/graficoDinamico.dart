@@ -9,7 +9,8 @@ enum ViewType { mes, ano }
 final formatadorMoeda = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
 class GraficoGestaoDinamico extends StatefulWidget {
-  const GraficoGestaoDinamico({super.key});
+  final VoidCallback? onVendaSalva;
+  const GraficoGestaoDinamico({super.key, this.onVendaSalva});
 
   @override
   State<GraficoGestaoDinamico> createState() => _GraficoGestaoDinamicoState();
