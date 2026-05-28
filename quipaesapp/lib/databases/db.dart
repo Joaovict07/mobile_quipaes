@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:excel/excel.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart';
@@ -44,24 +45,6 @@ class DatabaseHelper {
     const int versaoAtual = 2;
     final db = await instance;
 
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS produtos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nome TEXT,
-        categoria TEXT,
-        quantidade INTEGER,
-        preco REAL,
-        validade TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS versao_dados (
-        id INTEGER PRIMARY KEY,
-        versao INTEGER
-      )
-    ''');
-
     final result = await db.rawQuery('SELECT versao FROM versao_dados LIMIT 1');
     final versaoSalva = result.isEmpty ? 0 : result.first['versao'] as int;
 
@@ -69,6 +52,7 @@ class DatabaseHelper {
       await db.delete('vendas');
       await importarExcelParaDB();
       await ComprasRepository.inserirDadosTeste();
+      await ProdutosRepository.inserirDadosTesteProdutos();
 
       await db.delete('versao_dados');
       await db.insert('versao_dados', {'id': 1, 'versao': versaoAtual});
@@ -81,7 +65,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE vendas (
@@ -115,11 +99,11 @@ class DatabaseHelper {
         ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 1) {
+        if (oldVersion < 2) {
           try {
             await db.execute('ALTER TABLE produtos ADD COLUMN preco REAL');
           } catch (e) {
-
+            // Coluna já existe
           }
         }
       },
@@ -128,7 +112,7 @@ class DatabaseHelper {
   static Future<void> limparBanco() async {
     final db = await instance;
     await db.delete('vendas');
-    print('Banco limpo!');
+    debugPrint('Banco limpo!');
   }
 }
 
@@ -137,7 +121,7 @@ class ComprasRepository {
     final db = await DatabaseHelper.instance;
     final result = await db.rawQuery('''SELECT SUM(total_pedido) as total 
     FROM vendas
-    WHERE strftime('%Y-%m', data_hora) = strftime('%Y-%m', 'now')''');
+    WHERE strftime('%Y-%m', data_hora) = strftime('%Y-%m', datetime('now', '-3 hours'))''');
     return (result.first['total'] as double?) ?? 0.0;
   }
 
@@ -145,7 +129,7 @@ class ComprasRepository {
     final db = await DatabaseHelper.instance;
     final result = await db.rawQuery('''SELECT COUNT(*) as total
     FROM vendas
-    WHERE status_compra = 1 AND strftime('%Y-%m', data_hora) = strftime('%Y-%m', 'now')
+    WHERE status_compra = 1 AND strftime('%Y-%m', data_hora) = strftime('%Y-%m', datetime('now', '-3 hours'))
     ''');
     return (result.first['total'] as int?) ?? 0;
   }
@@ -154,7 +138,7 @@ class ComprasRepository {
     final db = await DatabaseHelper.instance;
     final result = await db.rawQuery('''SELECT COUNT(*) as total
     FROM vendas
-    WHERE strftime('%Y-%m', data_hora) = strftime('%Y-%m', 'now')
+    WHERE strftime('%Y-%m', data_hora) = strftime('%Y-%m', datetime('now', '-3 hours'))
     ''');
     return (result.first['total'] as int?) ?? 0;
   }
@@ -166,7 +150,7 @@ class ComprasRepository {
         strftime('%d/%m', data_hora) as dia,
         SUM(total_pedido) as total
       FROM vendas
-      WHERE status_compra != 0 AND data_hora >= date('now', '-7 days')
+      WHERE status_compra != 0 AND data_hora >= date('now', '-3 hours', '-7 days')
       GROUP BY strftime('%d/%m', data_hora)
       ORDER BY data_hora ASC
       LIMIT 7
@@ -204,12 +188,12 @@ class ComprasRepository {
       final db = await DatabaseHelper.instance;
       return await db.rawQuery('''SELECT strftime('%d/%m', data_hora) as data, total_pedido as total, status_compra as status, forma_pgto as pgto
       FROM vendas
-      WHERE status_compra != 1 AND strftime('%Y-%m', data_hora) = strftime('%Y-%m', 'now')
+      WHERE status_compra != 1 AND strftime('%Y-%m', data_hora) = strftime('%Y-%m', datetime('now', '-3 hours'))
       ORDER BY data_hora DESC
       ''');
   }
 
-  static Future<void> inserirNovaVenda(valor, categoria, data, formaPgto) async {
+  static Future<void> inserirNovaVenda(double valor, String categoria, DateTime data, String formaPgto) async {
     final db = await DatabaseHelper.instance;
 
     await db.insert('vendas', {'data_hora' : data.toIso8601String(), 'cpf_cliente': '00000000000', 'endereco_entrega': categoria, 'status_compra': 2, 'total_pedido': valor, 'valor_entrega': 5, 'forma_pgto': formaPgto}, conflictAlgorithm: ConflictAlgorithm.ignore);
@@ -280,7 +264,9 @@ class ComprasRepository {
       await db.insert('vendas', dado, conflictAlgorithm: ConflictAlgorithm.ignore);
     }
   }
+
 }
+
 
 class ProdutosRepository {
   static Future<void> inserir(Map<String, dynamic> produto) async {
@@ -290,6 +276,37 @@ class ProdutosRepository {
       produto,
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  static Future<void> inserirDadosTesteProdutos() async {
+    final db = await DatabaseHelper.instance;
+
+    final produtos = [
+      {'nome': 'Pão Francês', 'categoria': 'Pães', 'quantidade': 150, 'preco': 0.60, 'validade': '2026-05-30'},
+      {'nome': 'Baguete', 'categoria': 'Pães', 'quantidade': 40, 'preco': 8.20, 'validade': '2026-05-30'},
+      {'nome': 'Pão de Queijo', 'categoria': 'Pães', 'quantidade': 200, 'preco': 2.50, 'validade': '2026-05-29'},
+      {'nome': 'Pão Português', 'categoria': 'Pães', 'quantidade': 30, 'preco': 8.50, 'validade': '2026-06-02'},
+      {'nome': 'Pão com Grãos', 'categoria': 'Pães', 'quantidade': 65, 'preco': 10.00, 'validade': '2026-06-05'},
+      {'nome': 'Pão de Leite', 'categoria': 'Pães', 'quantidade': 80, 'preco': 7.00, 'validade': '2026-06-03'},
+      {'nome': 'Pão Integral', 'categoria': 'Pães', 'quantidade': 75, 'preco': 9.00, 'validade': '2026-06-05'},
+      {'nome': 'Brioche', 'categoria': 'Pães', 'quantidade': 20, 'preco': 12.00, 'validade': '2026-06-01'},
+      {'nome': 'Bolo de Cenoura', 'categoria': 'Bolos', 'quantidade': 52, 'preco': 20.20, 'validade': '2026-06-05'},
+      {'nome': 'Bolo de Fubá', 'categoria': 'Bolos', 'quantidade': 60, 'preco': 18.50, 'validade': '2026-06-06'},
+      {'nome': 'Bolo de Chocolate', 'categoria': 'Bolos', 'quantidade': 55, 'preco': 25.00, 'validade': '2026-06-04'},
+      {'nome': 'Esfiha de Carne', 'categoria': 'Salgados', 'quantidade': 120, 'preco': 5.50, 'validade': '2026-05-29'},
+      {'nome': 'Coxinha de Frango', 'categoria': 'Salgados', 'quantidade': 100, 'preco': 6.00, 'validade': '2026-05-29'},
+      {'nome': 'Empada de Palmito', 'categoria': 'Salgados', 'quantidade': 85, 'preco': 7.00, 'validade': '2026-05-30'},
+      {'nome': 'Sonho de Creme', 'categoria': 'Doces', 'quantidade': 70, 'preco': 4.50, 'validade': '2026-05-31'},
+      {'nome': 'Carolina de Doce de Leite', 'categoria': 'Doces', 'quantidade': 150, 'preco': 3.00, 'validade': '2026-06-02'},
+      {'nome': 'Torta de Morango', 'categoria': 'Doces', 'quantidade': 51, 'preco': 45.00, 'validade': '2026-05-30'},
+      {'nome': 'Pão de Forma', 'categoria': 'Pães', 'quantidade': 10, 'preco': 9.50, 'validade': '2026-05-29'},
+      {'nome': 'Croissant', 'categoria': 'Pães', 'quantidade': 95, 'preco': 8.00, 'validade': '2026-05-29'},
+      {'nome': 'Pão de Batata', 'categoria': 'Pães', 'quantidade': 88, 'preco': 6.50, 'validade': '2026-06-01'},
+    ];
+
+    for (final dado in produtos) {
+      await db.insert('produtos', dado, conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
   }
 
   static Future<List<Map<String, dynamic>>> listar() async {
