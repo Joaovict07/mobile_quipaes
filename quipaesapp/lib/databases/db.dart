@@ -42,6 +42,10 @@ class DatabaseHelper {
   
   static Future<void> inicializar() async {
     const int versaoAtual = 2;
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'vendas.db');
+    await deleteDatabase(path);
+    _db = null;
     final db = await instance;
 
     await db.execute('''
@@ -157,7 +161,7 @@ class ComprasRepository {
       FROM vendas
       WHERE status_compra != 0
       GROUP BY strftime('%d/%m', data_hora)
-      ORDER BY data_hora ASC
+      ORDER BY data_hora DESC
       LIMIT 7
     ''');
   }
@@ -195,7 +199,7 @@ class ComprasRepository {
       FROM vendas
       WHERE status_compra != 1 AND strftime('%Y-%m', data_hora) = strftime('%Y-%m', 'now')
       ORDER BY data_hora DESC
-      LIMIT 10''');
+      ''');
   }
 
   static Future<void> inserirNovaVenda(valor, categoria, data, formaPgto) async {
