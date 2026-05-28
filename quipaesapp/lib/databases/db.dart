@@ -118,7 +118,7 @@ class ComprasRepository {
     final db = await DatabaseHelper.instance;
     final result = await db.rawQuery('''SELECT SUM(total_pedido) as total 
     FROM vendas
-    WHERE strftime('%Y-%m', data_hora) = strftime('%Y-%m', datetime('now', '-3 hours'))''');
+    WHERE strftime('%Y-%m', data_hora) = strftime('%Y-%m', datetime('now', '-3 hours')) and status_compra != 0''');
     return (result.first['total'] as double?) ?? 0.0;
   }
 
@@ -135,7 +135,7 @@ class ComprasRepository {
     final db = await DatabaseHelper.instance;
     final result = await db.rawQuery('''SELECT COUNT(*) as total
     FROM vendas
-    WHERE strftime('%Y-%m', data_hora) = strftime('%Y-%m', datetime('now', '-3 hours'))
+    WHERE status_compra != 0 and strftime('%Y-%m', data_hora) = strftime('%Y-%m', datetime('now', '-3 hours'))
     ''');
     return (result.first['total'] as int?) ?? 0;
   }

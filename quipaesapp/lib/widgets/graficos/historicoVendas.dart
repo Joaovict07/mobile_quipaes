@@ -20,14 +20,17 @@ class Venda {
 }
 
 class HistoricoVendasWidget extends StatefulWidget {
-  final VoidCallback? onVendaSalva;
-  const HistoricoVendasWidget({super.key, this.onVendaSalva});
+  // <-- 1. Adicionar o callback aqui
+  final VoidCallback? onVendaCancelada;
+
+  const HistoricoVendasWidget({super.key, this.onVendaCancelada}); // <-- Atualizar o construtor
 
   @override
   State<HistoricoVendasWidget> createState() => _HistoricoVendasWidgetState();
 }
 
 class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
+  // ... (mantenha as variáveis de estado: _historico, _carregando, etc. iguais)
   List<Map<String, dynamic>> _historico = [];
   bool _carregando = true;
   int _paginaAtual = 0;
@@ -36,7 +39,6 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
   @override
   void initState() {
     super.initState();
-    // DatabaseHelper.limparBanco().then((_) => _carregarDados());
     _carregarDados();
   }
 
@@ -74,6 +76,7 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
   }
 
   void _abrirDetalhes(Venda venda) {
+    // ... (Mantenha o código do showDialog do _abrirDetalhes igual)
     showDialog(
       context: context,
       builder: (context) {
@@ -115,7 +118,6 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
                     ? Colors.red
                     : Colors.green,
               ),
-
               if (venda.status == StatusVenda.cancelada) ...[
                 const SizedBox(height: 16),
                 Container(
@@ -145,13 +147,11 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
             ],
           ),
           actions: [
-            // Botão Fechar
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(foregroundColor: Colors.grey),
               child: const Text("Fechar"),
             ),
-
             if (venda.status == StatusVenda.concluida)
               TextButton(
                 onPressed: () {
@@ -188,15 +188,20 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
           ),
           actions: [
             TextButton(
-              onPressed: () =>  Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(foregroundColor: Colors.grey),
               child: const Text("Voltar"),
             ),
             ElevatedButton(
               onPressed: () async {
                 await ComprasRepository.cancelarVenda(venda.id);
-                
+
                 setState(() => venda.status = StatusVenda.cancelada);
+
+                // <-- 2. Chamar o callback para avisar a tela pai (VendasWidget)
+                if (widget.onVendaCancelada != null) {
+                  widget.onVendaCancelada!();
+                }
 
                 if (context.mounted) {
                   Navigator.of(context).pop();
@@ -218,6 +223,7 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
     );
   }
 
+  // ... (Mantenha _mostrarFeedback, _detalheRow, build e _buildStatusBadge iguais)
   void _mostrarFeedback(String mensagem) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

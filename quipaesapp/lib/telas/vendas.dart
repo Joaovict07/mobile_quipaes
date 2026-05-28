@@ -3,9 +3,9 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import 'package:quipaesapp/widgets/graficos/graficoDinamico.dart'
-    as graficoDinamico;
+as graficoDinamico;
 import 'package:quipaesapp/widgets/graficos/historicoVendas.dart'
-    as historicoVendas;
+as historicoVendas;
 import '../widgets/menu_vendas.dart' as menuVendas;
 import 'package:quipaesapp/databases/db.dart';
 import 'package:intl/intl.dart';
@@ -85,32 +85,30 @@ class _VendasWidgetState extends State<VendasWidget> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Expanded(
-
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Vendas:',
-                                  style: TextStyle(
-                                    color: Colors.black54,
-                                    fontSize: 14.0,
-                                  ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Vendas:',
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 14.0,
                                 ),
-                                SizedBox(height: 8.0),
-                                Text(
-                                  _carregando
-                                      ? '...'
-                                      : formatadorMoeda.format(_vendasMes),
-                                  style: TextStyle(
-                                    color: Color(0xFF1E293B),
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              ),
+                              const SizedBox(height: 8.0),
+                              Text(
+                                _carregando
+                                    ? '...'
+                                    : formatadorMoeda.format(_vendasMes),
+                                style: const TextStyle(
+                                  color: Color(0xFF1E293B),
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            ),
-
+                              ),
+                            ],
+                          ),
                         ),
                         const VerticalDivider(
                           color: Colors.black12,
@@ -123,17 +121,17 @@ class _VendasWidgetState extends State<VendasWidget> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
+                              const Text(
                                 'Quantidade de vendas:',
                                 style: TextStyle(
                                   color: Colors.black54,
                                   fontSize: 14.0,
                                 ),
                               ),
-                              SizedBox(height: 8.0),
+                              const SizedBox(height: 8.0),
                               Text(
                                 _carregando ? '...' : _pedidos.toString(),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Color(0xFF1E293B),
                                   fontSize: 16.0,
                                   fontWeight: FontWeight.bold,
@@ -161,9 +159,8 @@ class _VendasWidgetState extends State<VendasWidget> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Padding(
+                        const Padding(
                           padding: EdgeInsetsGeometry.only(top: 1),
-
                           child: Text(
                             'Gráfico de Vendas',
                             style: TextStyle(
@@ -172,24 +169,23 @@ class _VendasWidgetState extends State<VendasWidget> {
                             ),
                           ),
                         ),
-
                         Padding(
                           padding: EdgeInsetsGeometry.symmetric(
                             horizontal: screenWidth * 0.05,
                           ),
                           child: graficoDinamico.GraficoGestaoDinamico(
-                            key: ValueKey(_graficoVersion),
-                            onVendaSalva: () { _carregarDados(); },
-                          ),
+                              key: ValueKey(_graficoVersion),
+                              onVendaSalva: () { _carregarDados(); },
+                              onVendaCancelada: () { _carregarDados(); }
                         ),
-                      ],
+                        )],
                     ),
                   ),
                 ),
 
                 SizedBox(height: screenHeight * 0.05),
 
-                //Historico de Vendas
+                // Historico de Vendas
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -198,7 +194,14 @@ class _VendasWidgetState extends State<VendasWidget> {
                   width: screenWidth * 0.9,
                   child: historicoVendas.HistoricoVendasWidget(
                     key: ValueKey(_historicoVersion),
-                    onVendaSalva: () {_carregarDados();},
+                    onVendaCancelada: () {
+                      // Recarrega as métricas quando uma venda for cancelada!
+                      _carregarDados();
+
+                      setState(() {
+                        _graficoVersion++;
+                      });
+                    },
                   ),
                 ),
                 SizedBox(height: screenHeight * 0.05),
@@ -208,12 +211,13 @@ class _VendasWidgetState extends State<VendasWidget> {
         ),
       ),
       floatingActionButton: AddTransactionFab(
-        onVendaSalva: () { 
+        onVendaSalva: () {
           _carregarDados();
-          setState(() { 
+          setState(() {
             _historicoVersion++;
             _graficoVersion++;
-          });
+          }
+          );
         },
       ),
     );

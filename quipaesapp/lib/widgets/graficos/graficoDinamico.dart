@@ -10,7 +10,8 @@ final formatadorMoeda = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
 class GraficoGestaoDinamico extends StatefulWidget {
   final VoidCallback? onVendaSalva;
-  const GraficoGestaoDinamico({super.key, this.onVendaSalva});
+  final VoidCallback? onVendaCancelada;
+  const GraficoGestaoDinamico({super.key, this.onVendaSalva, this.onVendaCancelada});
 
   @override
   State<GraficoGestaoDinamico> createState() => _GraficoGestaoDinamicoState();
