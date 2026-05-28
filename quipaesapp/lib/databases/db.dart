@@ -73,6 +73,7 @@ class DatabaseHelper {
       await db.delete('vendas');
       await importarExcelParaDB();
       await ComprasRepository.inserirDadosTeste();
+      await ProdutosRepository.inserirDadosTesteProdutos();
 
       await db.delete('versao_dados');
       await db.insert('versao_dados', {'id': 1, 'versao': versaoAtual});
@@ -284,7 +285,9 @@ class ComprasRepository {
       await db.insert('vendas', dado, conflictAlgorithm: ConflictAlgorithm.ignore);
     }
   }
+
 }
+
 
 class ProdutosRepository {
   static Future<void> inserir(Map<String, dynamic> produto) async {
@@ -294,6 +297,37 @@ class ProdutosRepository {
       produto,
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  static Future<void> inserirDadosTesteProdutos() async {
+    final db = await DatabaseHelper.instance;
+
+    final produtos = [
+      {'nome': 'Pão Francês', 'categoria': 'Pães', 'quantidade': 150, 'preco': 0.60, 'validade': '2026-05-30'},
+      {'nome': 'Baguete', 'categoria': 'Pães', 'quantidade': 40, 'preco': 8.20, 'validade': '2026-05-30'},
+      {'nome': 'Pão de Queijo', 'categoria': 'Pães', 'quantidade': 200, 'preco': 2.50, 'validade': '2026-05-29'},
+      {'nome': 'Pão Português', 'categoria': 'Pães', 'quantidade': 30, 'preco': 8.50, 'validade': '2026-06-02'},
+      {'nome': 'Pão com Grãos', 'categoria': 'Pães', 'quantidade': 65, 'preco': 10.00, 'validade': '2026-06-05'},
+      {'nome': 'Pão de Leite', 'categoria': 'Pães', 'quantidade': 80, 'preco': 7.00, 'validade': '2026-06-03'},
+      {'nome': 'Pão Integral', 'categoria': 'Pães', 'quantidade': 75, 'preco': 9.00, 'validade': '2026-06-05'},
+      {'nome': 'Brioche', 'categoria': 'Pães', 'quantidade': 20, 'preco': 12.00, 'validade': '2026-06-01'},
+      {'nome': 'Bolo de Cenoura', 'categoria': 'Bolos', 'quantidade': 52, 'preco': 20.20, 'validade': '2026-06-05'},
+      {'nome': 'Bolo de Fubá', 'categoria': 'Bolos', 'quantidade': 60, 'preco': 18.50, 'validade': '2026-06-06'},
+      {'nome': 'Bolo de Chocolate', 'categoria': 'Bolos', 'quantidade': 55, 'preco': 25.00, 'validade': '2026-06-04'},
+      {'nome': 'Esfiha de Carne', 'categoria': 'Salgados', 'quantidade': 120, 'preco': 5.50, 'validade': '2026-05-29'},
+      {'nome': 'Coxinha de Frango', 'categoria': 'Salgados', 'quantidade': 100, 'preco': 6.00, 'validade': '2026-05-29'},
+      {'nome': 'Empada de Palmito', 'categoria': 'Salgados', 'quantidade': 85, 'preco': 7.00, 'validade': '2026-05-30'},
+      {'nome': 'Sonho de Creme', 'categoria': 'Doces', 'quantidade': 70, 'preco': 4.50, 'validade': '2026-05-31'},
+      {'nome': 'Carolina de Doce de Leite', 'categoria': 'Doces', 'quantidade': 150, 'preco': 3.00, 'validade': '2026-06-02'},
+      {'nome': 'Torta de Morango', 'categoria': 'Doces', 'quantidade': 51, 'preco': 45.00, 'validade': '2026-05-30'},
+      {'nome': 'Pão de Forma', 'categoria': 'Pães', 'quantidade': 10, 'preco': 9.50, 'validade': '2026-05-29'},
+      {'nome': 'Croissant', 'categoria': 'Pães', 'quantidade': 95, 'preco': 8.00, 'validade': '2026-05-29'},
+      {'nome': 'Pão de Batata', 'categoria': 'Pães', 'quantidade': 88, 'preco': 6.50, 'validade': '2026-06-01'},
+    ];
+
+    for (final dado in produtos) {
+      await db.insert('produtos', dado, conflictAlgorithm: ConflictAlgorithm.ignore);
+    }
   }
 
   static Future<List<Map<String, dynamic>>> listar() async {
