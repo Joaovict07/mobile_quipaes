@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quipaesapp/databases/db.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 
 enum TransactionType {
@@ -89,6 +90,7 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   final _noteCtrl = TextEditingController();
 
   TransactionCategory _category = TransactionCategory.food;
+  FormaDePagamento _formaPagamento = FormaDePagamento.pix;
   DateTime _date = DateTime.now();
   bool _loading = false;
 
@@ -103,7 +105,6 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
-    FormaDePagamento _formaPagamento = FormaDePagamento.pix;
 
     return Container(
       decoration: const BoxDecoration(
@@ -222,26 +223,28 @@ class _AddTransactionSheetState extends State<AddTransactionSheet> {
 
     setState(() => _loading = true);
 
-    final amount = double.parse(_amountCtrl.text.replaceAll(',', '.'));
-    final tx = Transaction.create(
-      amount: amount,
-      category: _category,
-      description: _descCtrl.text.trim(),
-      date: _date,
-      note: _noteCtrl.text.trim().isEmpty ? null : _noteCtrl.text.trim(),
-    );
-
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (mounted) {
-      setState(() => _loading = false);
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Venda criada!'),
-          backgroundColor: colorsTheme.AppColors.primary,
-        ),
+    try {
+      final amount = double.parse(_amountCtrl.text.replaceAll(',', '.'));
+      await ComprasRepository.inserirNovaVenda(
+        amount,
+        _category.label,
+        _date,
+        _formaPagamento.label,
       );
+
+      if (mounted) {
+        setState(() => _loading = false);
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Venda criada!'),
+            backgroundColor: colorsTheme.AppColors.primary,
+          ),
+        );
+      }
+    } catch (e) {
+      print('ERRO AO SALVAR: $e');
+      setState(() => _loading = false);
     }
   }
 }

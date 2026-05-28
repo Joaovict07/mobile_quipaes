@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quipaesapp/databases/db.dart';
 
 enum StatusVenda { concluida, cancelada }
 
@@ -24,74 +25,39 @@ class HistoricoVendasWidget extends StatefulWidget {
 }
 
 class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
+  List<Map<String, dynamic>> _historico = [];
+  bool _carregando = true;
   int _paginaAtual = 0;
   static const int _itensPorPagina = 5;
 
+  @override
+  void initState() {
+    super.initState();
+    // DatabaseHelper.limparBanco().then((_) => _carregarDados());
+    _carregarDados();
+  }
+
+  Future<void> _carregarDados() async {
+    final historico = await ComprasRepository.getHistoricoVendas();
+
+    setState(() {
+      _historico = historico;
+      carregarVendas();
+      _carregando = false;
+    });
+  }
+
   // Mock de Vendas
-  final List<Venda> _todasVendas = [
-    Venda(
-      cliente: "Delivery - Pix",
-      data: "12/04 - 14:20",
-      valor: 150.00,
-      status: StatusVenda.concluida,
-    ),
-    Venda(
-      cliente: "Loja - Crédito",
-      data: "12/04 - 13:10",
-      valor: 85.50,
-      status: StatusVenda.cancelada,
-    ),
-    Venda(
-      cliente: "Loja - Pix",
-      data: "12/04 - 11:45",
-      valor: 320.00,
-      status: StatusVenda.concluida,
-    ),
-    Venda(
-      cliente: "Delivery - Débito",
-      data: "11/04 - 18:30",
-      valor: 45.00,
-      status: StatusVenda.concluida,
-    ),
-    Venda(
-      cliente: "Delivery - Crédito",
-      data: "11/04 - 16:00",
-      valor: 120.00,
-      status: StatusVenda.cancelada,
-    ),
-    Venda(
-      cliente: "Loja - Pix",
-      data: "10/04 - 09:15",
-      valor: 200.00,
-      status: StatusVenda.concluida,
-    ),
-    Venda(
-      cliente: "Delivery - Pix",
-      data: "10/04 - 08:00",
-      valor: 75.00,
-      status: StatusVenda.concluida,
-    ),
-    Venda(
-      cliente: "Loja - Débito",
-      data: "09/04 - 17:45",
-      valor: 430.00,
-      status: StatusVenda.cancelada,
-    ),
-    Venda(
-      cliente: "Delivery - Crédito",
-      data: "09/04 - 15:20",
-      valor: 95.00,
-      status: StatusVenda.concluida,
-    ),
-    Venda(
-      cliente: "Loja - Pix",
-      data: "08/04 - 12:00",
-      valor: 60.00,
-      status: StatusVenda.concluida,
-    ),
-  ];
+  final List<Venda> _todasVendas = [];
 
   int get _totalPaginas => (_todasVendas.length / _itensPorPagina).ceil();
+
+  void carregarVendas() {
+    _todasVendas.clear();
+    for (int i = 0; i < _historico.length; i++) {
+      _todasVendas.add(new Venda(cliente: 'Delivery - ${_historico[i]['pgto']}', data: _historico[i]['data'], status: _historico[i]['status'] == 0 ? StatusVenda.cancelada : StatusVenda.concluida, valor: _historico[i]['total']));
+    }
+  }
 
   List<Venda> get _vendasDaPagina {
     final inicio = _paginaAtual * _itensPorPagina;
