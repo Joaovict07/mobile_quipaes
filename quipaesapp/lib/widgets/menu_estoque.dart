@@ -44,6 +44,7 @@ class _AddProductSheetState extends State<AddProductSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _quantityCtrl = TextEditingController();
+  final _priceCtrl = TextEditingController();
 
   ProductCategory _category = ProductCategory.food;
   DateTime _expirationDate = DateTime.now();
@@ -53,6 +54,7 @@ class _AddProductSheetState extends State<AddProductSheet> {
   void dispose() {
     _nameCtrl.dispose();
     _quantityCtrl.dispose();
+    _priceCtrl.dispose();
     super.dispose();
   }
 
@@ -129,7 +131,23 @@ class _AddProductSheetState extends State<AddProductSheet> {
               ),
               const SizedBox(height: 12),
 
-              // Data de Vencimento
+              TextFormField(
+                controller: _priceCtrl,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: const InputDecoration(
+                  labelText: 'Preço de Venda (R\$)',
+                  prefixIcon: Icon(Icons.attach_money_rounded),
+                ),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Informe o preço';
+                  final normalized = v.replaceAll(',', '.');
+                  final parsed = double.tryParse(normalized);
+                  if (parsed == null || parsed < 0) return 'Preço inválido';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+
               _DatePicker(
                 date: _expirationDate,
                 onChanged: (d) => setState(() => _expirationDate = d),
@@ -137,7 +155,6 @@ class _AddProductSheetState extends State<AddProductSheet> {
 
               const SizedBox(height: 36),
 
-              // Botão de Salvar
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -184,6 +201,7 @@ class _AddProductSheetState extends State<AddProductSheet> {
         'nome': _nameCtrl.text.trim(),
         'categoria': _category.label,
         'quantidade': int.parse(_quantityCtrl.text),
+        'preco': double.parse(_priceCtrl.text.replaceAll(',', '.')),
         'validade':
             '${_expirationDate.day.toString().padLeft(2, '0')}/${_expirationDate.month.toString().padLeft(2, '0')}/${_expirationDate.year}',
       };

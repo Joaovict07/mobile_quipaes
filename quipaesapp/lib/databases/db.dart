@@ -54,6 +54,7 @@ class DatabaseHelper {
         nome TEXT,
         categoria TEXT,
         quantidade INTEGER,
+        preco REAL,
         validade TEXT
       )
     ''');
@@ -112,10 +113,20 @@ class DatabaseHelper {
             nome TEXT,
             categoria TEXT,
             quantidade INTEGER,
+            preco REAL,
             validade TEXT
           )
         ''');
-      }
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 1) {
+          try {
+            await db.execute('ALTER TABLE produtos ADD COLUMN preco REAL');
+          } catch (e) {
+
+          }
+        }
+      },
     );
   }
   static Future<void> limparBanco() async {
@@ -161,7 +172,7 @@ class ComprasRepository {
       FROM vendas
       WHERE status_compra != 0 AND data_hora >= date('now', '-7 days')
       GROUP BY strftime('%d/%m', data_hora)
-      ORDER BY data_hora ASC
+      ORDER BY data_hora DESC
       LIMIT 7
     ''');
   }
@@ -199,7 +210,7 @@ class ComprasRepository {
       FROM vendas
       WHERE status_compra != 1 AND strftime('%Y-%m', data_hora) = strftime('%Y-%m', 'now')
       ORDER BY data_hora DESC
-      LIMIT 10''');
+      ''');
   }
 
   static Future<void> inserirNovaVenda(valor, categoria, data, formaPgto) async {
