@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quipaesapp/databases/db.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 
 enum ProductCategory {
@@ -111,7 +112,7 @@ class _AddProductSheetState extends State<AddProductSheet> {
               ),
               const SizedBox(height: 12),
 
-              // Quantidade em Estoque
+
               TextFormField(
                 controller: _quantityCtrl,
                 keyboardType: TextInputType.number,
@@ -178,29 +179,37 @@ class _AddProductSheetState extends State<AddProductSheet> {
 
     setState(() => _loading = true);
 
-    final quantity = int.parse(_quantityCtrl.text);
-    
-    // Objeto Produto Criado
-    final product = Product(
-      name: _nameCtrl.text.trim(),
-      category: _category,
-      quantity: quantity,
-      expirationDate: _expirationDate,
-    );
+    try {
+      final dadosProduto = {
+        'nome': _nameCtrl.text.trim(),
+        'categoria': _category.label,
+        'quantidade': int.parse(_quantityCtrl.text),
+        'validade':
+            '${_expirationDate.day.toString().padLeft(2, '0')}/${_expirationDate.month.toString().padLeft(2, '0')}/${_expirationDate.year}',
+      };
 
-    // Simula tempo de requisição
-    await Future.delayed(const Duration(seconds: 1));
+      await ProdutosRepository.inserir(dadosProduto);
 
-    if (mounted) {
+      if (mounted) {
+        setState(() => _loading = false);
+        Navigator.of(context).pop(true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Produto adicionado com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
       setState(() => _loading = false);
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Produto adicionado com sucesso!'),
-          // backgroundColor: colorsTheme.AppColors.primary, // Descomente para usar sua cor
-          backgroundColor: Colors.blue,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao salvar produto: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

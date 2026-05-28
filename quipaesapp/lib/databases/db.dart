@@ -42,6 +42,17 @@ class DatabaseHelper {
   static Future<void> inicializar() async {
     const int versaoAtual = 1;
     final db = await instance;
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS produtos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT,
+        categoria TEXT,
+        quantidade INTEGER,
+        validade TEXT
+      )
+    ''');
+
     await db.execute('''
       CREATE TABLE IF NOT EXISTS versao_dados (
         id INTEGER PRIMARY KEY,
@@ -79,6 +90,16 @@ class DatabaseHelper {
             status_compra INTEGER,
             total_pedido REAL,
             valor_entrega REAL
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE produtos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT,
+            categoria TEXT,
+            quantidade INTEGER,
+            validade TEXT
           )
         ''');
       }
@@ -223,5 +244,26 @@ class ComprasRepository {
     for (final dado in dados) {
       await db.insert('vendas', dado, conflictAlgorithm: ConflictAlgorithm.ignore);
     }
+  }
+}
+
+class ProdutosRepository {
+  static Future<void> inserir(Map<String, dynamic> produto) async {
+    final db = await DatabaseHelper.instance;
+    await db.insert(
+      'produtos',
+      produto,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  static Future<List<Map<String, dynamic>>> listar() async {
+    final db = await DatabaseHelper.instance;
+    return await db.query('produtos', orderBy: 'nome ASC');
+  }
+
+  static Future<void> excluir(int id) async {
+    final db = await DatabaseHelper.instance;
+    await db.delete('produtos', where: 'id = ?', whereArgs: [id]);
   }
 }
