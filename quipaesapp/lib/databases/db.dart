@@ -50,6 +50,7 @@ class DatabaseHelper {
         nome TEXT,
         categoria TEXT,
         quantidade INTEGER,
+        preco REAL,
         validade TEXT
       )
     ''');
@@ -108,10 +109,20 @@ class DatabaseHelper {
             nome TEXT,
             categoria TEXT,
             quantidade INTEGER,
+            preco REAL,
             validade TEXT
           )
         ''');
-      }
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 1) {
+          try {
+            await db.execute('ALTER TABLE produtos ADD COLUMN preco REAL');
+          } catch (e) {
+
+          }
+        }
+      },
     );
   }
   static Future<void> limparBanco() async {

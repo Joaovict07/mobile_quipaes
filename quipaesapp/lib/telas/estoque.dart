@@ -33,7 +33,7 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
           'produto': e['nome'],
           'categoria': e['categoria'],
           'quantidade': e['quantidade'],
-          'preco': 0.0,
+          'preco': (e['preco'] as num?)?.toDouble() ?? 0.0,
           'validade': e['validade'],
         };
       }).toList();
