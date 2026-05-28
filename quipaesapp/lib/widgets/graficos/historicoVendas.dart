@@ -4,12 +4,14 @@ import 'package:quipaesapp/databases/db.dart';
 enum StatusVenda { concluida, cancelada }
 
 class Venda {
+  final int id;
   final String cliente;
   final String data;
   final double valor;
   StatusVenda status;
 
   Venda({
+    required this.id,
     required this.cliente,
     required this.data,
     required this.valor,
@@ -48,7 +50,6 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
     });
   }
 
-  // Mock de Vendas
   final List<Venda> _todasVendas = [];
 
   int get _totalPaginas => (_todasVendas.length / _itensPorPagina).ceil();
@@ -56,7 +57,13 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
   void carregarVendas() {
     _todasVendas.clear();
     for (int i = 0; i < _historico.length; i++) {
-      _todasVendas.add(new Venda(cliente: 'Delivery - ${_historico[i]['pgto']}', data: _historico[i]['data'], status: _historico[i]['status'] == 0 ? StatusVenda.cancelada : StatusVenda.concluida, valor: _historico[i]['total']));
+      _todasVendas.add(Venda(
+          id: _historico[i]['id'],
+          cliente: 'Delivery - ${_historico[i]['pgto']}',
+          data: _historico[i]['data'],
+          status: _historico[i]['status'] == 0 ? StatusVenda.cancelada : StatusVenda.concluida,
+          valor: _historico[i]['total']
+      ));
     }
   }
 
@@ -66,7 +73,6 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
     return _todasVendas.sublist(inicio, fim);
   }
 
-  // Abre o dialog de detalhes/cancelamento
   void _abrirDetalhes(Venda venda) {
     showDialog(
       context: context,
@@ -110,7 +116,6 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
                     : Colors.green,
               ),
 
-              // Aviso se já estiver cancelada
               if (venda.status == StatusVenda.cancelada) ...[
                 const SizedBox(height: 16),
                 Container(
@@ -147,7 +152,6 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
               child: const Text("Fechar"),
             ),
 
-            // Botão Cancelar Venda — só aparece se estiver concluída
             if (venda.status == StatusVenda.concluida)
               TextButton(
                 onPressed: () {
@@ -189,10 +193,15 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
               child: const Text("Voltar"),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                await ComprasRepository.cancelarVenda(venda.id);
+                
                 setState(() => venda.status = StatusVenda.cancelada);
-                Navigator.of(context).pop();
-                _mostrarFeedback("Venda cancelada com sucesso.");
+
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                  _mostrarFeedback("Venda cancelada com sucesso.");
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -222,11 +231,11 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
   }
 
   Widget _detalheRow(
-    IconData icon,
-    String label,
-    String value, {
-    Color? valueColor,
-  }) {
+      IconData icon,
+      String label,
+      String value, {
+        Color? valueColor,
+      }) {
     return Row(
       children: [
         Icon(icon, size: 18, color: Colors.grey),
@@ -277,7 +286,7 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12.0),
               child: OutlinedButton(
-                onPressed: () => _abrirDetalhes(venda), // <-- abre o dialog
+                onPressed: () => _abrirDetalhes(venda),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.all(16),
                   side: BorderSide(color: Colors.grey.shade200),
@@ -302,30 +311,30 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
                         ),
                         venda.status == StatusVenda.cancelada
                             ? Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: const Text(
-                                  "Cancelada",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.red,
-                                  ),
-                                ),
-                              )
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            "Cancelada",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.red,
+                            ),
+                          ),
+                        )
                             : Text(
-                                "R\$ ${venda.valor.toStringAsFixed(2)}",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.green,
-                                ),
-                              ),
+                          "R\$ ${venda.valor.toStringAsFixed(2)}",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w400,
+                            color: Colors.green,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -358,7 +367,7 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
             );
           }).toList(),
 
-          Row(
+          if (_carregando) const Center(child: CircularProgressIndicator()) else Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               OutlinedButton.icon(
@@ -377,7 +386,7 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
                 ),
               ),
               Text(
-                "${_paginaAtual + 1} / $_totalPaginas",
+                "${_paginaAtual + 1} / ${(_totalPaginas == 0 ? 1 : _totalPaginas)}",
                 style: const TextStyle(color: Colors.grey, fontSize: 13),
               ),
               OutlinedButton.icon(

@@ -10,10 +10,8 @@ Future<void> importarExcelParaDB() async {
   final excel = Excel.decodeBytes(bytes);
   final db = await DatabaseHelper.openDB();
 
-  // Pega a primeira aba
   final sheet = excel.tables[excel.tables.keys.first]!;
 
-  // Pula a linha 0 (cabeçalho) e itera as demais
   for (int i = 1; i < sheet.maxRows; i++) {
     final row = sheet.row(i);
 
@@ -26,21 +24,21 @@ Future<void> importarExcelParaDB() async {
     final forma_pgto = row[7]?.value?.toString() ?? '';
 
     await db.insert(
-      'vendas',
-      {'data_hora': data_hora, 'cpf_cliente': cpf, 'endereco_entrega': endereco, 'status_compra': status, 'total_pedido': total_pedido, 'valor_entrega': valor_entrega, 'forma_pgto': forma_pgto},
-      conflictAlgorithm: ConflictAlgorithm.replace
+        'vendas',
+        {'data_hora': data_hora, 'cpf_cliente': cpf, 'endereco_entrega': endereco, 'status_compra': status, 'total_pedido': total_pedido, 'valor_entrega': valor_entrega, 'forma_pgto': forma_pgto},
+        conflictAlgorithm: ConflictAlgorithm.replace
     );
   }
 }
 
 class DatabaseHelper {
   static Database? _db;
-  
+
   static Future<Database> get instance async {
     _db ??= await openDB();
     return _db!;
   }
-  
+
   static Future<void> inicializar() async {
     const int versaoAtual = 2;
     final db = await instance;
@@ -103,7 +101,6 @@ class DatabaseHelper {
           try {
             await db.execute('ALTER TABLE produtos ADD COLUMN preco REAL');
           } catch (e) {
-            // Coluna já existe
           }
         }
       },
@@ -150,7 +147,7 @@ class ComprasRepository {
         strftime('%d/%m', data_hora) as dia,
         SUM(total_pedido) as total
       FROM vendas
-      WHERE status_compra != 0 AND data_hora >= date('now', '-3 hours', '-7 days')
+      WHERE status_compra != 0 AND data_hora >= date('now', 'localtime', '-6 days')
       GROUP BY strftime('%d/%m', data_hora)
       ORDER BY data_hora ASC
       LIMIT 7
@@ -185,12 +182,23 @@ class ComprasRepository {
   }
 
   static Future<List<Map<String, dynamic>>> getHistoricoVendas() async {
-      final db = await DatabaseHelper.instance;
-      return await db.rawQuery('''SELECT strftime('%d/%m', data_hora) as data, total_pedido as total, status_compra as status, forma_pgto as pgto
+    final db = await DatabaseHelper.instance;
+    // <-- Adicionado o id_compra as id no SELECT
+    return await db.rawQuery('''SELECT id_compra as id, strftime('%d/%m', data_hora) as data, total_pedido as total, status_compra as status, forma_pgto as pgto
       FROM vendas
       WHERE status_compra != 1 AND strftime('%Y-%m', data_hora) = strftime('%Y-%m', datetime('now', '-3 hours'))
       ORDER BY data_hora DESC
       ''');
+  }
+
+  static Future<void> cancelarVenda(int id) async {
+    final db = await DatabaseHelper.instance;
+    await db.update(
+      'vendas',
+      {'status_compra': 0},
+      where: 'id_compra = ?',
+      whereArgs: [id],
+    );
   }
 
   static Future<void> inserirNovaVenda(double valor, String categoria, DateTime data, String formaPgto) async {
