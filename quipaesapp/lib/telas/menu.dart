@@ -24,15 +24,16 @@ class _MenuWidgetState extends State<MenuWidget> {
     // DatabaseHelper.limparBanco().then((_) => _carregarDados());
     _carregarDados();
   }
-
+  Map<String, int> _estatisticas = {'total': 0, 'baixo': 0, 'vencendo': 0};
   Future<void> _carregarDados() async {
     final vendas = await ComprasRepository.getVendasMes();
     final pendentes = await ComprasRepository.getPedidosPendentes();
     final grafico = await ComprasRepository.getVendas7Dias();
-
+    final stats = await ProdutosRepository.getEstatisticas();
     setState(() {
       _vendasMes = vendas;
       _pedidosPendentes = pendentes;
+      _estatisticas = stats;
       _vendas7Dias = grafico;
       _carregando = false;
     });
@@ -160,7 +161,7 @@ class _MenuWidgetState extends State<MenuWidget> {
                               ),
                               SizedBox(height: 4.0),
                               Text(
-                                _carregando? '...' : '$_pedidosPendentes',
+                                _carregando? '...' : _estatisticas['baixo'].toString(),
                                 style: TextStyle(
                                   color: Colors.red,
                                   fontSize: 16.0,
