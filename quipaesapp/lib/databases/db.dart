@@ -42,6 +42,10 @@ class DatabaseHelper {
   
   static Future<void> inicializar() async {
     const int versaoAtual = 2;
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'vendas.db');
+    await deleteDatabase(path);
+    _db = null;
     final db = await instance;
 
     await db.execute('''
@@ -155,7 +159,7 @@ class ComprasRepository {
         strftime('%d/%m', data_hora) as dia,
         SUM(total_pedido) as total
       FROM vendas
-      WHERE status_compra != 0
+      WHERE status_compra != 0 AND data_hora >= date('now', '-7 days')
       GROUP BY strftime('%d/%m', data_hora)
       ORDER BY data_hora ASC
       LIMIT 7
