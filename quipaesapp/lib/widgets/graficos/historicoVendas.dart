@@ -18,7 +18,8 @@ class Venda {
 }
 
 class HistoricoVendasWidget extends StatefulWidget {
-  const HistoricoVendasWidget({super.key});
+  final VoidCallback? onVendaSalva;
+  const HistoricoVendasWidget({super.key, this.onVendaSalva});
 
   @override
   State<HistoricoVendasWidget> createState() => _HistoricoVendasWidgetState();
@@ -183,7 +184,7 @@ class _HistoricoVendasWidgetState extends State<HistoricoVendasWidget> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () =>  Navigator.of(context).pop(),
               style: TextButton.styleFrom(foregroundColor: Colors.grey),
               child: const Text("Voltar"),
             ),

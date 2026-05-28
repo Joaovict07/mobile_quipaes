@@ -22,6 +22,7 @@ class _VendasWidgetState extends State<VendasWidget> {
   int _pedidos = 0;
   List<Map<String, dynamic>> _vendas7Dias = [];
   bool _carregando = true;
+  int _historicoVersion = 0;
 
   @override
   void initState() {
@@ -191,7 +192,10 @@ class _VendasWidgetState extends State<VendasWidget> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   width: screenWidth * 0.9,
-                  child: historicoVendas.HistoricoVendasWidget(),
+                  child: historicoVendas.HistoricoVendasWidget(
+                    key: ValueKey(_historicoVersion),
+                    onVendaSalva: () {_carregarDados();},
+                  ),
                 ),
                 SizedBox(height: screenHeight * 0.05),
               ],
@@ -200,7 +204,10 @@ class _VendasWidgetState extends State<VendasWidget> {
         ),
       ),
       floatingActionButton: AddTransactionFab(
-        onVendaSalva: () => _carregarDados(),
+        onVendaSalva: () { 
+          _carregarDados();
+          setState(() => _historicoVersion++);
+        },
       ),
     );
   }
