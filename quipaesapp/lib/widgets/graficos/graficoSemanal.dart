@@ -62,7 +62,7 @@ class VendasBarChartSemana extends StatelessWidget {
               ),
             ),
             leftTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 40),
+              sideTitles: SideTitles(showTitles: false, reservedSize: 40),
             ),
             topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),

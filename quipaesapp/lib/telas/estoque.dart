@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:quipaesapp/databases/db.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import '../widgets/menu_estoque.dart' as menuEstoque;
@@ -15,43 +16,35 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
   int _paginaAtual = 0;
   static const int _itensPorPagina = 12;
 
-  final List<Map<String, dynamic>> _produtos = [
-    {
-      'produto': 'Arroz 5kg',
-      'categoria': 'Alimentos',
-      'quantidade': 120,
-      'preco': 24.90,
-      'validade': '12/08/2025',
-    },
-    {
-      'produto': 'Feijão 1kg',
-      'categoria': 'Alimentos',
-      'quantidade': 85,
-      'preco': 8.50,
-      'validade': '30/06/2025',
-    },
-    {
-      'produto': 'Óleo de Soja',
-      'categoria': 'Alimentos',
-      'quantidade': 60,
-      'preco': 6.99,
-      'validade': '01/03/2026',
-    },
-    {
-      'produto': 'Shampoo 400ml',
-      'categoria': 'Higiene',
-      'quantidade': 40,
-      'preco': 15.00,
-      'validade': '10/11/2025',
-    },
-    {
-      'produto': 'Sabão em Pó',
-      'categoria': 'Limpeza',
-      'quantidade': 30,
-      'preco': 12.75,
-      'validade': '20/01/2027',
-    },
-  ];
+  List<Map<String, dynamic>> _produtos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarProdutos();
+  }
+
+  Future<void> _carregarProdutos() async {
+    final dados = await ProdutosRepository.listar();
+    setState(() {
+      _produtos = dados.map((e) {
+        return {
+          'id': e['id'],
+          'produto': e['nome'],
+          'categoria': e['categoria'],
+          'quantidade': e['quantidade'],
+          'preco': 0.0,
+          'validade': e['validade'],
+        };
+      }).toList();
+    });
+  }
+
+  Future<void> _excluirProduto(int id) async {
+    await ProdutosRepository.excluir(id);
+    _carregarProdutos();
+    if (mounted) Navigator.pop(context);
+  }
 
   int get _totalPaginas =>
       _produtos.isEmpty ? 1 : (_produtos.length / _itensPorPagina).ceil();
@@ -169,7 +162,7 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
                 icon: Icons.delete_outline_rounded,
                 label: 'Excluir produto',
                 color: Colors.redAccent,
-                onTap: () => Navigator.pop(context),
+                onTap: () => _excluirProduto(produto['id']),
                 isDestructive: true,
               ),
               const SizedBox(height: 8),
@@ -593,7 +586,9 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
           ),
         ),
       ),
-      floatingActionButton: const AddTransactionFab(),
+      floatingActionButton: AddTransactionFab(
+        onRefresh: _carregarProdutos,
+      ),
     );
   }
 
@@ -612,18 +607,23 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
 }
 
 class AddTransactionFab extends StatelessWidget {
-  const AddTransactionFab({super.key});
+  final VoidCallback onRefresh;
+  const AddTransactionFab({super.key, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
-      onPressed: () {
-        showModalBottomSheet(
+      onPressed: () async {
+        final result = await showModalBottomSheet(
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
           builder: (context) => const menuEstoque.AddProductSheet(),
         );
+
+        if (result == true) {
+          onRefresh();
+        }
       },
       backgroundColor: colorsTheme.AppColors.primary,
       elevation: 4,

@@ -2,8 +2,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
 import 'package:quipaesapp/databases/db.dart';
+import 'package:intl/intl.dart';
 
 enum ViewType { semana, mes, ano }
+
+final formatadorMoeda = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
 class GraficoGestaoDinamico extends StatefulWidget {
   const GraficoGestaoDinamico({super.key});
@@ -52,9 +55,9 @@ class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
               selectedForegroundColor: Colors.white,
             ),
             segments: const [
-              ButtonSegment(value: ViewType.semana, label: Text('Semana'), icon: Icon(Icons.calendar_view_week)),
-              ButtonSegment(value: ViewType.mes, label: Text('Mês'), icon: Icon(Icons.calendar_view_month)),
-              ButtonSegment(value: ViewType.ano, label: Text('Ano'), icon: Icon(Icons.calendar_today)),
+              ButtonSegment(value: ViewType.semana, label: Text('Semana', style: TextStyle(fontSize: 13)), icon: Icon(Icons.calendar_view_week)),
+              ButtonSegment(value: ViewType.mes, label: Text('Mês', style: TextStyle(fontSize: 13)), icon: Icon(Icons.calendar_view_month)),
+              ButtonSegment(value: ViewType.ano, label: Text('Ano', style: TextStyle(fontSize: 13)), icon: Icon(Icons.calendar_today)),
             ],
             selected: {selectedView},
             onSelectionChanged: (newSelection) {
@@ -83,6 +86,35 @@ class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
               titlesData: _getTitlesData(),
               gridData: const FlGridData(show: false),
               borderData: FlBorderData(show: false),
+              barTouchData: BarTouchData(
+                enabled: true,
+                touchTooltipData: BarTouchTooltipData(
+                  // Define a cor de fundo como cinza claro
+                  getTooltipColor: (BarChartGroupData group) => Colors.grey.shade200,
+
+                  /* Nota: Se a sua versão do fl_chart for mais antiga e der erro na linha
+       acima, apague o 'getTooltipColor' e use:
+       tooltipBgColor: Colors.grey.shade200,
+    */
+
+                  tooltipPadding: const EdgeInsets.all(8),
+                  tooltipMargin: 8,
+
+                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                    // Usando o formatador que você já tem no código
+                    String valorFormatado = formatadorMoeda.format(rod.toY);
+
+                    return BarTooltipItem(
+                      valorFormatado,
+                      const TextStyle(
+                        color: Colors.black, // Define a cor do texto como preto
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    );
+                  },
+                ),
+              ),
               alignment: BarChartAlignment.spaceAround,
             ),
           ),
@@ -185,7 +217,7 @@ class _GraficoGestaoDinamicoState extends State<GraficoGestaoDinamico> {
       ),
       leftTitles: AxisTitles(
         sideTitles: SideTitles(
-          showTitles: true,
+          showTitles: false,
           reservedSize: 40,
           getTitlesWidget: (value, meta) => Text(
             value >= 1000 ? '${(value / 1000).toInt()}k' : value.toInt().toString(),
