@@ -76,7 +76,9 @@ class _MenuWidgetState extends State<MenuWidget> {
                   children: [
                     _buildMenuCard(
                       onTap: (){
-                        Navigator.pushNamed(context, AppRoutes.vendas);
+                        Navigator.pushNamed(context, AppRoutes.vendas).then((_) {
+                          _carregarDados();
+                        });
                       },
                       title: 'Vendas',
                       icon: Icons.point_of_sale,
