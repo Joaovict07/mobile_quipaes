@@ -172,7 +172,7 @@ class ComprasRepository {
       FROM vendas
       WHERE status_compra != 0 AND data_hora >= date('now', '-7 days')
       GROUP BY strftime('%d/%m', data_hora)
-      ORDER BY data_hora DESC
+      ORDER BY data_hora ASC
       LIMIT 7
     ''');
   }
