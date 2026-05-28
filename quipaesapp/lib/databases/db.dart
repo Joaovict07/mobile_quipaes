@@ -150,7 +150,7 @@ class ComprasRepository {
         strftime('%d/%m', data_hora) as dia,
         SUM(total_pedido) as total
       FROM vendas
-      WHERE status_compra != 0 AND data_hora >= date('now', '-3 hours', '-7 days')
+      WHERE status_compra != 0 AND data_hora >= date('now', 'localtime', '-6 days')
       GROUP BY strftime('%d/%m', data_hora)
       ORDER BY data_hora ASC
       LIMIT 7

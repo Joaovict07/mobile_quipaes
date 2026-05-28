@@ -301,7 +301,7 @@ class _EstoqueWidgetState extends State<EstoqueWidget> {
         height: double.infinity,
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24),
             child: Column(
               children: [
                 SizedBox(height: screenHeight * 0.12),

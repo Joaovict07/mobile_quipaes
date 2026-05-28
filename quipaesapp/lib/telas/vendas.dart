@@ -65,7 +65,7 @@ class _VendasWidgetState extends State<VendasWidget> {
         height: double.infinity,
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24),
             child: Column(
               children: [
                 SizedBox(height: screenHeight * 0.12),
