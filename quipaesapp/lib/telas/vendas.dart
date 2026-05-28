@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:quipaesapp/routes/app_routes.dart';
 import 'package:quipaesapp/theme/colors.dart' as colorsTheme;
-import 'package:quipaesapp/widgets/graficos/graficoDinamico.dart' as graficoDinamico;
-import 'package:quipaesapp/widgets/graficos/historicoVendas.dart' as historicoVendas;
+import 'package:quipaesapp/widgets/graficos/graficoDinamico.dart'
+    as graficoDinamico;
+import 'package:quipaesapp/widgets/graficos/historicoVendas.dart'
+    as historicoVendas;
 import '../widgets/menu_vendas.dart' as menuVendas;
 import 'package:quipaesapp/databases/db.dart';
-
-
+import 'package:intl/intl.dart';
 
 class VendasWidget extends StatefulWidget {
   const VendasWidget({super.key});
@@ -28,6 +29,8 @@ class _VendasWidgetState extends State<VendasWidget> {
     _carregarDados();
   }
 
+  final formatadorMoeda = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+
   Future<void> _carregarDados() async {
     final vendas = await ComprasRepository.getVendasMes();
     final pedidos = await ComprasRepository.getPedidos();
@@ -43,7 +46,7 @@ class _VendasWidgetState extends State<VendasWidget> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
-  
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -59,7 +62,7 @@ class _VendasWidgetState extends State<VendasWidget> {
       body: Container(
         decoration: BoxDecoration(color: colorsTheme.AppColors.background),
         width: double.infinity,
-        height: double.infinity,  
+        height: double.infinity,
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
@@ -70,10 +73,8 @@ class _VendasWidgetState extends State<VendasWidget> {
                 // BigNumbers
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white, 
-                    borderRadius: BorderRadius.circular(
-                      12,
-                    ), 
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: SizedBox(
                     width: screenWidth * 0.9,
@@ -82,11 +83,10 @@ class _VendasWidgetState extends State<VendasWidget> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 24.0),
+
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
                                   'Vendas:',
@@ -95,44 +95,11 @@ class _VendasWidgetState extends State<VendasWidget> {
                                     fontSize: 14.0,
                                   ),
                                 ),
-                                SizedBox(height: 4.0),
+                                SizedBox(height: 8.0),
                                 Text(
-                                  _carregando ? '...' : 'R\$ ${_vendasMes.toStringAsFixed(2)}' ,
-                                  style: TextStyle(
-                                    color: Color(
-                                      0xFF1E293B,
-                                    ), 
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const VerticalDivider(
-                          color: Colors.black12,
-                          thickness: 1,
-                          indent: 24, 
-                          endIndent: 24, 
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 24.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Quantidade de vendas:',
-                                  style: TextStyle(
-                                    color: Colors.black54,
-                                    fontSize: 14.0,
-                                  ),
-                                ),
-                                SizedBox(height: 4.0),
-                                Text(
-                                  _carregando ? '...' : _pedidos.toString(), 
+                                  _carregando
+                                      ? '...'
+                                      : formatadorMoeda.format(_vendasMes),
                                   style: TextStyle(
                                     color: Color(0xFF1E293B),
                                     fontSize: 16.0,
@@ -141,6 +108,36 @@ class _VendasWidgetState extends State<VendasWidget> {
                                 ),
                               ],
                             ),
+
+                        ),
+                        const VerticalDivider(
+                          color: Colors.black12,
+                          thickness: 1,
+                          indent: 24,
+                          endIndent: 24,
+                        ),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Quantidade de vendas:',
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 14.0,
+                                ),
+                              ),
+                              SizedBox(height: 8.0),
+                              Text(
+                                _carregando ? '...' : _pedidos.toString(),
+                                style: TextStyle(
+                                  color: Color(0xFF1E293B),
+                                  fontSize: 16.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -149,8 +146,8 @@ class _VendasWidgetState extends State<VendasWidget> {
                 ),
 
                 SizedBox(height: screenHeight * 0.05),
-              
-              // Gráfico
+
+                // Gráfico
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -158,18 +155,22 @@ class _VendasWidgetState extends State<VendasWidget> {
                   ),
                   child: SizedBox(
                     width: screenWidth * 0.9,
-                    height: screenHeight * 0.55,
+                    height: screenHeight * 0.50,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Padding(
-                          padding: EdgeInsetsGeometry.only(
-                            top: 1
-                          ),
+                          padding: EdgeInsetsGeometry.only(top: 1),
 
-                          child: Text('Gráfico de Vendas', style: TextStyle(color: Colors.black54, fontSize: 16.0)),
+                          child: Text(
+                            'Gráfico de Vendas',
+                            style: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 16.0,
+                            ),
+                          ),
                         ),
-                        
+
                         Padding(
                           padding: EdgeInsetsGeometry.symmetric(
                             horizontal: screenWidth * 0.05,
@@ -180,7 +181,7 @@ class _VendasWidgetState extends State<VendasWidget> {
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: screenHeight * 0.05),
 
                 //Historico de Vendas
@@ -190,15 +191,15 @@ class _VendasWidgetState extends State<VendasWidget> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   width: screenWidth * 0.9,
-                  child: historicoVendas.HistoricoVendasWidget()
+                  child: historicoVendas.HistoricoVendasWidget(),
                 ),
-                SizedBox(height: screenHeight * 0.05,)
+                SizedBox(height: screenHeight * 0.05),
               ],
             ),
           ),
         ),
       ),
-      floatingActionButton: AddTransactionFab()
+      floatingActionButton: AddTransactionFab(),
     );
   }
 }
@@ -258,7 +259,7 @@ class AddTransactionFab extends StatelessWidget {
         );
       },
       backgroundColor: colorsTheme.AppColors.primary,
-      child: const Icon(Icons.add_rounded, color: Colors.white)
+      child: const Icon(Icons.add_rounded, color: Colors.white),
     );
   }
 }
